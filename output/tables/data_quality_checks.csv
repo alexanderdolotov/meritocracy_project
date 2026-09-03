@@ -1,0 +1,24 @@
+check,severity,passed,detail
+no_duplicate_rows,WARN,False,"2,105 fully-duplicate rows on the ~24 kept columns (expected in large samples - see merge_preserves_row_count for the real check)"
+merge_preserves_row_count,FAIL,True,"322,373 rows before merge_inequality(), 322,373 immediately after"
+gdp_merge_preserves_row_count,FAIL,True,"322,373 rows before merge_gdp(), 322,373 immediately after"
+no_missing_identifiers,FAIL,True,"0 missing values across ['country_code', 'wave', 'year', 'country_wave']"
+weight_positive,FAIL,True,0 non-positive values
+weight_raw_positive,FAIL,True,0 non-positive values
+luck_belief_in_range,FAIL,True,"0 values outside [1, 10]"
+just_benefits_in_range,FAIL,True,"0 values outside [1, 10]"
+just_taxes_in_range,FAIL,True,"0 values outside [1, 10]"
+just_bribe_in_range,FAIL,True,"0 values outside [1, 10]"
+just_steal_in_range,FAIL,True,"0 values outside [1, 10]"
+age_in_range,FAIL,True,"0 values outside [15, 105]"
+income_decile_in_range,FAIL,True,"0 values outside [1, 10]"
+education_in_range,FAIL,True,"0 values outside [1, 9]"
+just_divorce_in_range,FAIL,True,"0 values outside [1, 10]"
+study_in_range,FAIL,True,"0 values outside [1, 2]"
+min_cluster_size,FAIL,True,0 clusters below MIN_COUNTRY_N=200 (smallest: 224)
+luck_belief_z_standardized,FAIL,True,"mean=-0.0000, std=1.0000 (expected ~0, ~1)"
+gini_c_centered,FAIL,True,mean=0.0000 (expected ~0)
+row_count_plausible,WARN,True,"322,373 rows (expected roughly 50,000-500,000)"
+no_country_year_spans_multiple_waves,WARN,True,0 country-year combinations span more than one wave
+norm_index_matches_item_availability,WARN,True,0 rows where norm_index and item availability disagree
+gini_plausible_range,WARN,True,"0 values outside [15, 75] (actual range: 22.9-63.6)"

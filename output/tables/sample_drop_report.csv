@@ -1,0 +1,7 @@
+outcome,bare_n,full_n,drop_pct,flagged
+norm_index,322373,195997,39.2,True
+just_benefits,315612,191482,39.3,True
+just_taxes,315582,190923,39.5,True
+just_bribe,319937,194653,39.2,True
+just_steal,181499,78521,56.7,True
+trust,311095,187606,39.7,True

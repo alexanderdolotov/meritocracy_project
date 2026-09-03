@@ -1,0 +1,15 @@
+outcome,term,n,r2_full,r2_reduced,incremental_r2,incremental_r2_pct
+norm_index,luck_belief_z,195997,0.1325,0.1219,0.0105,1.05
+norm_index,luck_belief_z:gini_c interaction,182760,0.1292,0.1276,0.0016,0.16
+just_benefits,luck_belief_z,191482,0.1165,0.1113,0.0052,0.52
+just_benefits,luck_belief_z:gini_c interaction,178433,0.1157,0.1151,0.0006,0.06
+just_taxes,luck_belief_z,190923,0.1059,0.0987,0.0072,0.72
+just_taxes,luck_belief_z:gini_c interaction,177857,0.1007,0.1002,0.0005,0.05
+just_bribe,luck_belief_z,194653,0.1031,0.0963,0.0068,0.68
+just_bribe,luck_belief_z:gini_c interaction,181505,0.1063,0.1043,0.0019,0.19
+just_steal,luck_belief_z,78521,0.1553,0.1449,0.0104,1.04
+just_steal,luck_belief_z:gini_c interaction,69676,0.13,0.1282,0.0018,0.18
+trust,luck_belief_z,187606,0.1325,0.1321,0.0004,0.04
+trust,luck_belief_z:gini_c interaction,174813,0.1369,0.1366,0.0003,0.03
+just_divorce,luck_belief_z,192349,0.2375,0.2359,0.0016,0.16
+just_divorce,luck_belief_z:gini_c interaction,179294,0.2443,0.2443,0.0,0.0
