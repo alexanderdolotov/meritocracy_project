@@ -1,5 +1,5 @@
 check,severity,passed,detail
-no_duplicate_rows,WARN,False,"2,105 fully-duplicate rows on the ~24 kept columns (expected in large samples - see merge_preserves_row_count for the real check)"
+no_duplicate_rows,WARN,False,"1,698 fully-duplicate rows on the ~24 kept columns (expected in large samples - see merge_preserves_row_count for the real check)"
 merge_preserves_row_count,FAIL,True,"322,373 rows before merge_inequality(), 322,373 immediately after"
 gdp_merge_preserves_row_count,FAIL,True,"322,373 rows before merge_gdp(), 322,373 immediately after"
 no_missing_identifiers,FAIL,True,"0 missing values across ['country_code', 'wave', 'year', 'country_wave']"

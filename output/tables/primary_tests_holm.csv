@@ -1,4 +1,4 @@
 hypothesis,outcome,spec,term,coef,p_raw,underpowered,p_holm
-H1: luck_belief -> norm_index (within-country),norm_index,M2,luck_belief_z,0.0838,0.0,False,0.0
-H2: luck_belief x inequality interaction,norm_index,M3,luck_belief_z:gini_c,0.0038,0.0128,False,0.0128
-H3: luck_belief -> trust (within-country),trust,M2,luck_belief_z,-0.0098,0.0,False,0.0
+H1: luck_belief -> norm_index (within-country),norm_index,M2,luck_belief_z,0.0819,0.0,False,0.0
+H2: luck_belief x inequality interaction,norm_index,M3,luck_belief_z:gini_c,0.0036,0.0051,False,0.0051
+H3: luck_belief -> trust (within-country),trust,M2,luck_belief_z,-0.0073,0.0001,False,0.0003
