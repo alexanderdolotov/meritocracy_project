@@ -7,6 +7,20 @@ Sample: WVS Longitudinal file v5.0, waves 3–7, merged with SWIID Gini — 322,
 
 ---
 
+## Correction (2026-09-10)
+
+Two errors were found in this pipeline after the results below were first produced and reported, both surfaced while investigating why `just_steal`'s Gini interaction looked suspiciously precise. Both are fixed as of this run; every number below reflects the corrected pipeline.
+
+1. **A registered contingency check was outcome-blind.** The pre-registration specifies that M3 (the Gini-interaction spec) is descriptive-only below 100 matched country-wave clusters. The code computed that count from the full merged dataset's raw Gini coverage (207 clusters — identical for every outcome, regardless of that outcome's own missingness) rather than from each outcome's actual M3 estimation sample, so the check could never fire, for any outcome, in any run.
+
+2. **The deeper cause: `education` was 0% populated in WVS wave 7.** `config.py` mapped `education` to raw variable `X025`, an 8-category scale WVS fielded in waves 2–6. Wave 7 switched to the ISCED-2011 standard and re-coded the item under `X025A_01` instead. Since `education` is a control in every M1/M2/M3 spec for every outcome, this silently excluded all of wave 7 — the largest wave, ~30% of the base sample — from every covariate-adjusted model in the study, with no error or warning. For `just_steal` (itself fielded only in waves 6–7), this meant its entire M3 sample was wave-6-only: every one of its 53 countries contributed exactly one wave, making `gini_c` *exactly* collinear with the country fixed effects. That collinearity, not a real effect, is what produced the suspiciously tight SE that prompted this investigation — statsmodels' own `SingularMatrixWarning` fired on exactly this fit and was the tell.
+
+**Fix:** `education` now backfills wave-7 rows from `X025A_01`, shifted +1 so its ISCED-2011 0–8 range lands on `education`'s existing 1–8 range (`X025A_01`'s "0 = no formal education" becomes the same bottom rung as `X025`'s existing "1"). This assumes the two ISCED vintages' one-digit levels rank comparably — a reasonable but unverified assumption, not a confirmed item-by-item crosswalk (see Limitations). `education`'s missingness dropped from 34% to under 5%, roughly uniform across waves 3–7 (0.9–8.1%).
+
+**What changed:** H1, H2, and H3 all still hold, correctly signed, still significant after Holm correction — the core finding survives. What doesn't survive: `just_steal`'s M3 is now properly identified (107 country-wave clusters, above the 100-cluster floor) and its `gini_c` coefficient is no longer significant (was 0.024, SE 0.0006, p<0.0001; now −0.009, SE 0.030, p=0.77) — the old number was the rank-deficiency artifact described above, not a real effect. `norm_index`'s own `gini_c` main effect (Result 5, exploratory) also loses significance (p=0.037 → p=0.156). The pre-registered >30%-sample-drop contingency, which drove part of the original Result 3, no longer fires at all (drop is now 6.3–10.7% across outcomes, was 39–57%) — the unadjusted-vs-adjusted comparison it triggered is removed below, since it's no longer part of what the registration calls for on this data. Every other reported coefficient moved by a few percent up to, in `trust`'s case, about 25%, with no other sign or significance flips. Full detail in the current `output/pipeline_run_log.txt`; the pre-correction log was not separately preserved.
+
+---
+
 ## Question
 
 Does believing that success comes from luck and connections rather than hard
@@ -18,9 +32,9 @@ higher?
 
 | Hypothesis | Spec | Coefficient | 95% CI | p (Holm-corrected) |
 |---|---|---|---|---|
-| H1: `luck_belief` → `norm_index` | M2 (country + wave FE) | +0.084 | [0.068, 0.100] | <0.0001 |
-| H2: interaction with Gini | M3 | +0.004 | [0.001, 0.007] | 0.013 |
-| H3: `luck_belief` → `trust` | M2 | −0.010 | [−0.014, −0.006] | <0.0001 |
+| H1: `luck_belief` → `norm_index` | M2 (country + wave FE) | +0.082 | [0.070, 0.094] | <0.0001 |
+| H2: interaction with Gini | M3 | +0.004 | [0.001, 0.006] | 0.005 |
+| H3: `luck_belief` → `trust` | M2 | −0.007 | [−0.011, −0.004] | 0.0003 |
 
 All three are signed in the pre-registered direction and survive
 Holm-Bonferroni correction across the three-test confirmatory family. None of
@@ -28,8 +42,10 @@ the three pre-specified refutation criteria hold: the association does not
 disappear once country fixed effects are added, it does vary with inequality,
 and it does not reverse in high-inequality countries.
 
-A 1-SD increase in luck attribution is associated with a 0.084-SD increase in
-the norm-violation composite, within the same country and survey wave. The
+A 1-SD increase in luck attribution is associated with a 0.082-point increase
+in the norm-violation composite — which itself has a standard deviation of
+0.80 across respondents, so this is roughly a 0.10-SD shift in the composite,
+not a 1-for-1 SD comparison — within the same country and survey wave. The
 effect size is modest but precisely estimated, given a sample in the hundreds
 of thousands, and stable under every robustness check below.
 
@@ -38,7 +54,7 @@ relationship — the same WVS predictor, three of the same four outcome items �
 report a positive, significant coefficient (0.046–0.080 across their four
 outcomes, their Table 4 baseline column, p<0.001 for each; verified against the
 full text — local copy: `literature/kline_galeotti_orsini_2025.pdf`) in the same
-direction and a comparable rough magnitude to the 0.084 above. This
+direction and a comparable rough magnitude to the 0.082 above. This
 project rediscovered that relationship using country + wave fixed effects (a
 stricter within-country identification than their random-effects specification)
 and a shifted WVS wave range (3–7, vs. their 1–6 - overlapping on waves 3–6, but
@@ -72,24 +88,25 @@ rather than norm violation, and country-level work on inequality and corruption
 `RESEARCH_PLAN.md`'s Related literature for the fuller discussion.
 
 **Variance explained.** The M2 model's overall R² (0.13 for `norm_index`) is
-dominated by the country and wave fixed effects themselves — roughly 104
-country dummies and 4 wave dummies mechanically absorb a large share of
-between-group variance regardless of `luck_belief_z`. Isolating
-`luck_belief_z`'s own contribution (refitting the same model without it, on
-the same sample, and taking the drop in R²) gives its unique share:
-**1.05% of variance in `norm_index`**, **0.04% in `trust`**. The interaction
-term (H2) explains even less — 0.03–0.19% across the six outcomes here (the
-negative control is treated separately, in Result 4). This is not a
-p-value and is not affected by sample size the way a p-value is; it is a
-direct answer to how much of the outcome `luck_belief_z` accounts for on its
-own, and the answer is: precisely estimated, correctly signed, and small.
-Full detail in `output/tables/incremental_r2.csv`.
+dominated by the country and wave fixed effects themselves — 102 country
+dummies and 3 wave dummies in the M2 sample (103 countries and all 4
+in-sample waves, one of each absorbed as the reference category) mechanically
+absorb a large share of between-group variance regardless of `luck_belief_z`.
+Isolating `luck_belief_z`'s own contribution (refitting the same model
+without it, on the same sample, and taking the drop in R²) gives its unique
+share: **1.02% of variance in `norm_index`**, **0.03% in `trust`**. The
+interaction term (H2) explains even less — 0.02–0.15% across the six
+outcomes here (the negative control is treated separately, in Result 4).
+This is not a p-value and is not affected by sample size the way a p-value
+is; it is a direct answer to how much of the outcome `luck_belief_z`
+accounts for on its own, and the answer is: precisely estimated, correctly
+signed, and small. Full detail in `output/tables/incremental_r2.csv`.
 
 ## Result 2: country fixed effects change the conclusion for trust
 
 The pooled model without fixed effects (M1) is not significant for `trust`
-(coefficient −0.0061, p = 0.145, CI crosses zero). The effect appears only
-once country fixed effects are added (M2: −0.0098, p < 0.0001). Pooling across
+(coefficient −0.0038, p = 0.236, CI crosses zero). The effect appears only
+once country fixed effects are added (M2: −0.0073, p = 0.0001). Pooling across
 countries without fixed effects masks a real within-country relationship in
 this case — the reason the pre-registration designates M2, not M1, as the
 primary specification for H1.
@@ -98,20 +115,24 @@ primary specification for H1.
 
 | Check | Result |
 |---|---|
-| Exclude 16 highest-leverage clusters (M2, registered check) | 0.084 → 0.087 (3.3% change) |
-| Education/income as dummies vs. ordinal (M2) | 0.084 → 0.084 (0.2% change) |
-| Unadjusted M1 (bare `luck_belief_z`, no covariates, no FE) vs. adjusted M2 | `norm_index`: 0.096 → 0.084, both significant. `trust`: −0.005 (not significant, CI crosses zero) → −0.010 (significant) |
+| Exclude 23 highest-leverage clusters (M2, registered check) | 0.082 → 0.084 (2.6% change) |
+| Education/income as dummies vs. ordinal (M2) | 0.082 → 0.082 (0.0% change) |
 | Logit vs. linear probability model (trust) | Same sign, both significant |
-| GDP per capita added as a control (M2, not pre-registered) | `norm_index`: 0.084 → 0.085 (1.4% change), both significant. `trust`: −0.010 → −0.011 (9.9% change), both significant |
+| GDP per capita added as a control (M2, not pre-registered) | `norm_index`: 0.082 → 0.082 (0.3% change), both significant. `trust`: −0.007 → −0.008 (7.9% change), both significant |
 
-Covariates (chiefly `education`, 34% missing) drop the estimation sample by
-39–57% depending on outcome, exceeding the pre-registered 30% flag, which
-triggers the registered unadjusted-model comparison above. For `norm_index`
-the unadjusted and adjusted estimates are close. For `trust`, the bare
-bivariate relationship is not statistically significant on its own — the
-significant effect in Result 1 depends on the covariates and fixed effects
-being included, consistent with Result 2's finding that fixed effects change
-the conclusion for this outcome.
+Covariates (chiefly `education`) drop the estimation sample by 10.5–10.7%
+depending on outcome (6.3% for `just_steal`) — well under the pre-registered
+30% flag, so the registered unadjusted-model comparison does not trigger for
+any outcome in the corrected pipeline. (It did trigger in the pre-correction
+run — see Correction, above — which is in fact what originally surfaced the
+chain of issues that led here; that comparison row is removed from this
+table because it's no longer part of what the registration calls for on
+this data, not because it was uninformative before.)
+
+For `trust`, Result 2 already isolates the relevant comparison cleanly: with
+covariates held constant, adding country and wave fixed effects is what
+takes the coefficient from non-significant (M1: −0.0038, p=0.236) to
+significant (M2: −0.0073, p=0.0001).
 
 An additional (not pre-registered) check excluding country-wave clusters with
 dual EVS/WVS reporting was not applicable here — this file contains no EVS
@@ -121,7 +142,7 @@ rows (`study` is constant).
 
 The pre-registered negative control — `just_divorce`, selected as a
 justifiability item with no theoretical link to perceived meritocracy — has
-an M2 coefficient of 0.131, larger than H1's own 0.084.
+an M2 coefficient of 0.109, larger than H1's own 0.082.
 
 The pre-registered decision rule for this test: a comparable-or-larger
 coefficient on an outcome with no theoretical link to perceived meritocracy
@@ -166,8 +187,8 @@ methodological artifact from a genuine broader mechanism.
 
 One additional, not pre-registered, comparison is reported here for
 completeness even though it complicates rather than resolves the picture:
-`just_divorce`'s incremental R² (0.16%) is smaller than `norm_index`'s
-(1.05%) — the coefficient comparison above and the variance-explained
+`just_divorce`'s incremental R² (0.11%) is smaller than `norm_index`'s
+(1.02%) — the coefficient comparison above and the variance-explained
 comparison here rank the two outcomes in opposite order. The pre-registered
 decision rule is stated in terms of coefficient magnitude, not variance
 explained, so the coefficient comparison is what governs the conclusion
@@ -184,33 +205,52 @@ completeness, uncorrected:
 
 | Outcome | `gini_c` coefficient | SE | p |
 |---|---|---|---|
-| `norm_index` | +0.021 | 0.010 | 0.037 |
-| `just_benefits` | +0.007 | 0.026 | 0.782 |
-| `just_taxes` | +0.040 | 0.019 | 0.034 |
-| `just_bribe` | +0.069 | 0.031 | 0.028 |
-| `just_steal` | +0.024 | 0.0006 | <0.0001 |
-| `trust` | +0.004 | 0.003 | 0.257 |
-| `just_divorce` (negative control) | −0.091 | 0.032 | <0.01 |
+| `norm_index` | +0.013 | 0.009 | 0.156 |
+| `just_benefits` | −0.024 | 0.027 | 0.373 |
+| `just_taxes` | +0.022 | 0.017 | 0.194 |
+| `just_bribe` | +0.053 | 0.026 | 0.037 |
+| `just_steal` | −0.009 | 0.030 | 0.769 |
+| `trust` | +0.003 | 0.003 | 0.318 |
+| `just_divorce` (negative control) | −0.046 | 0.029 | 0.115 |
 
-`norm_index`'s association with `gini_c` net of `luck_belief_z` and the
-interaction is positive and marginal (p=0.037). Two things limit how much
-weight this carries: it is not Holm-corrected, and with country fixed
-effects in the model, `gini_c` is identified mostly from within-country
-change in inequality across survey waves, not from comparing high- and
-low-inequality countries directly. `just_steal`'s standard error (0.0006) is
-roughly 5 to over 50 times tighter than every other outcome's and is not treated as reliable
-without further checking — `just_steal` is restricted to waves 6–7, leaving
-`gini_c` very little within-country temporal variation to identify off,
-which can produce an artificially precise cluster-robust standard error. The
-negative control's coefficient is negative, the opposite sign from
-`norm_index`'s positive one — consistent with the construct-specificity
-concern in Result 4, on an already-exploratory statistic.
+None of these seven coefficients are Holm-corrected — none were part of the
+registered confirmatory family. In the corrected pipeline, only
+`just_bribe`'s reaches conventional significance. `norm_index`'s own
+association, which read as positive and marginally significant in the
+pre-correction run (p=0.037), is no longer distinguishable from zero
+(p=0.156) — that specific exploratory claim does not survive the wave-7 fix
+and is superseded here. This is not Holm-corrected either way and was
+always exploratory; it's noted because it appeared in an earlier version of
+this document and no longer holds.
+
+### `just_steal`'s M3: resolved, not just relabeled
+
+The pipeline had a bug, found and fixed 2026-09-10 — full detail in the
+Correction note at the top of this document. In short: `education` was 0%
+populated in WVS wave 7 because of a variable-mapping gap, which silently
+excluded wave 7 from every covariate-adjusted model in the study. For
+`just_steal` (fielded only in waves 6–7 to begin with), this meant its M3
+sample was wave-6-only — every one of its 53 countries contributed exactly
+one wave, making `gini_c` *exactly* collinear with the country fixed
+effects. The resulting coefficient (0.024, SE 0.0006, p<0.0001) was not a
+thin-but-real estimate; it was an arbitrary artifact of how the solver
+handled an exactly rank-deficient design matrix — statsmodels'
+`SingularMatrixWarning` fired on exactly this fit.
+
+With the fix, `just_steal`'s M3 sample now spans both waves: 71 countries,
+36 of them contributing both waves 6 and 7 (real within-country Gini
+variation — median within-country SD 0.45), 107 country-wave clusters in
+total, above the pre-registered 100-cluster floor. Properly identified,
+`gini_c` shows no effect: −0.009 (SE 0.030, p=0.77). This is a cleaner
+result than either the original number or an "underpowered, descriptive
+only" caveat would have been: `just_steal` simply doesn't show a Gini main
+effect, once the model can actually estimate one.
 
 ### Does gini_c survive controlling for GDP per capita?
 
 Country fixed effects absorb each country's *average* wealth level, but
 `gini_c` is identified almost entirely from within-country Gini change
-across survey waves (see above) - the same window a country's GDP per
+across survey waves - the same window a country's GDP per
 capita is also changing in. If wealth and inequality move together within a
 country over time, `gini_c` could be standing in for "the country got
 richer" rather than "the country got more unequal." Not pre-registered, but
@@ -220,26 +260,29 @@ additional control.
 
 Nothing changes materially. Across the six outcomes tested (`norm_index`,
 the four items, `trust`), `luck_belief_z`'s M2 coefficient moves by
-0.1–9.9%, `gini_c`'s own M3 coefficient moves by 2.2–31.6%, and the H2
-interaction term - the one actually under moderation test - moves by
-1.0–5.4%, the most stable of the three. No coefficient changes sign, and no
-significance pattern flips in either direction: everything significant
-before stays significant, everything not stays not. With GDP added: H1 is
-0.0850 (SE 0.0083, still p<0.0001), H2's interaction is 0.0038 (SE 0.0015,
-unchanged to four decimal places), H3 is −0.0108 (SE 0.0023, still
-p<0.0001). Full detail in `output/tables/gdp_control_check.csv`.
+0.1–7.9%, `gini_c`'s own M3 coefficient moves by 3.8–108.9% (the top of that
+range is `just_steal`'s — a swing between two estimates that are both
+statistically indistinguishable from zero, i.e. noise moving around noise,
+not evidence of instability in a real effect), and the H2 interaction term -
+the one actually under moderation test - moves by 0.3–2.9%, the most stable
+of the three. No coefficient changes sign, and no significance pattern flips
+in either direction among these six: everything significant before stays
+significant, everything not stays not. With GDP added: H1 is 0.0822
+(SE 0.0062, still p<0.001), H2's interaction is 0.0036 (SE 0.0013, unchanged
+to four decimal places), H3 is −0.0079 (SE 0.0020, still p<0.001). Full
+detail in `output/tables/gdp_control_check.csv`.
 
 The negative control (`just_divorce`) was checked too, for completeness. Its
 M2 coefficient - the number Result 4's conclusion rests on - moves by only
-0.5% (0.1310 → 0.1303), the smallest change of any outcome in this check.
-Its `gini_c` coefficient stays negative and significant (−0.091 → −0.102),
-the opposite sign from `norm_index`'s positive one that Result 5's synthesis
-already reads as one signal against a pure response-style explanation. Both
-negative-control findings hold up under the GDP control.
-
-This doesn't rule out every possible development-related confound, but it
-rules out the specific one this check targets: `gini_c` is not simply
-proxying for country-year wealth level.
+0.1% (0.1093 → 0.1094), the smallest change of any outcome in this check.
+Its `gini_c` coefficient is negative throughout but crosses from
+not-significant to significant with GDP added (−0.046, p=0.115, without
+GDP; −0.065, p<0.05, with GDP — the log only prints a significance star for
+GDP-check models, not an exact p, for this one) — unlike the pre-correction
+run, where it was significant either way. This doesn't rule out every possible
+development-related confound, but the coefficient Result 4's conclusion
+actually rests on (the M2 estimate, not the exploratory `gini_c` one) is
+essentially unaffected by the GDP check regardless.
 
 ### What the negative control shows, taken together
 
@@ -248,20 +291,28 @@ agree with each other:
 
 | Comparison | Result | Reads as |
 |---|---|---|
-| M2 coefficient (pre-registered test) | divorce (0.131) > norm_index (0.084) | fails the negative control |
-| Incremental R² (exploratory) | divorce (0.16%) < norm_index (1.05%) | passes |
-| `gini_c` association (exploratory) | opposite signs | passes |
+| M2 coefficient (pre-registered test) | divorce (0.109) > norm_index (0.082) | fails the negative control |
+| Incremental R² (exploratory) | divorce (0.11%) < norm_index (1.02%) | passes |
+| `gini_c` association (exploratory) | opposite signs, neither significant | weaker signal than before |
 
 This is a mixed result, not a clean pass or fail, and it should be read as
 such. The coefficient comparison is the one stated in the pre-registration
 and is what governs the conclusion in Result 4 - it was committed to before
 any of these numbers existed, which is the entire reason to trust it over
 the other two. The other two comparisons are reported for completeness, not
-used to overturn it: one plausible, unconfirmed explanation is that country,
-wave, and demographic factors already predict divorce attitudes far better
-than they predict economic-norm attitudes (R²=0.24 vs. 0.13 for the full
-model), leaving proportionally less variance for `luck_belief_z` to explain
-even if its per-respondent coefficient is comparably sized.
+used to overturn it: one plausible, unconfirmed explanation for the R²
+comparison is that country, wave, and demographic factors already predict
+divorce attitudes far better than they predict economic-norm attitudes
+(R²=0.24 vs. 0.13 for the full model), leaving proportionally less variance
+for `luck_belief_z` to explain even if its per-respondent coefficient is
+comparably sized. The third comparison is weaker evidence than it was: in
+the pre-correction run, `norm_index`'s `gini_c` association was positive
+and marginally significant while `just_divorce`'s was negative and clearly
+significant — opposite signs, read as one signal against a pure
+response-style explanation. In the corrected pipeline neither reaches
+significance (p=0.156 and p=0.115 respectively); the signs still point
+opposite ways, but with neither distinguishable from zero on its own, this
+comparison doesn't carry much weight either way anymore.
 
 ### Why no better negative control was substituted
 
@@ -305,6 +356,11 @@ pattern specific to this project's choice of negative control. See
 
 ## Result 6: composite reliability across countries and waves (not pre-registered)
 
+This check is unaffected by the wave-7/`education` correction above: it
+scores Cronbach's alpha on complete cases across the four justifiability
+items directly and never uses `education` or any other covariate. The
+numbers below are identical to the pre-correction run.
+
 The pooled Cronbach's alpha (0.798, reported above) assumes the four
 justifiability items hang together the same way in every country and every
 survey wave — that assumption was never tested until now. Alpha was
@@ -323,9 +379,13 @@ others. 21 countries had too few complete cases to score at all.
 and 5 have zero complete cases across all four items — `just_steal` is only
 fielded in waves 6–7, so no respondent from an earlier wave can answer all
 four simultaneously — and wave 4 has no qualifying respondents in this
-sample at all. This means the by-wave check can't actually speak to whether
-reliability changed across the full span this sample covers, only that it
-looks stable between two adjacent waves in the 2010s–2020s.
+sample at all (E040, the `luck_belief` item itself, was not fielded in wave
+4 — see Result 5's Correction note for a related, separate wave-coverage
+issue affecting `education`; this one is upstream of the inclusion
+criterion and isn't something a covariate fix can touch). This means the
+by-wave check can't actually speak to whether reliability changed across
+the full span this sample covers, only that it looks stable between two
+adjacent waves in the 2010s–2020s.
 
 This does not change the registered contingency: that fires on the pooled
 alpha (0.798, well above the 0.60 threshold), not on any per-group value,
@@ -337,6 +397,11 @@ behaves somewhat differently as a measure from country to country. Full
 detail in `output/tables/reliability_by_group.csv`.
 
 ## Result 7: gini-movers diff-in-differences-style check (not pre-registered, not causally identified)
+
+This check is also unaffected by the wave-7/`education` correction: it
+works from country-wave means of `norm_index` and Gini directly, without
+`education` or any other individual-level covariate, so the numbers below
+are identical to the pre-correction run.
 
 A different, cruder way of asking the same question M3 already answers:
 split the 66 countries with at least two survey waves and a matched Gini
@@ -390,24 +455,26 @@ tracking Gini's gradual drift. Full detail in
 All four justifiability items move in the same direction as the composite,
 each significant. These coefficients are on each item's own raw 1–10 scale,
 not standardized like `norm_index`, and are not directly comparable to the
-0.084 headline estimate or to each other without rescaling.
+0.082 headline estimate or to each other without rescaling.
 
 | Item | M2 coef | M3 interaction | Notes |
 |---|---|---|---|
-| `just_benefits` | 0.188*** | 0.0074* | |
-| `just_taxes` | 0.202*** | 0.0063 (p=0.064) | interaction not significant alone |
-| `just_bribe` | 0.161*** | 0.0100*** | |
-| `just_steal` | 0.186*** | 0.0099 (p=0.064) | waves 6–7 only, n=78,521; interaction not significant alone |
+| `just_benefits` | 0.185*** | 0.0075** | |
+| `just_taxes` | 0.192*** | 0.0061* | |
+| `just_bribe` | 0.159*** | 0.0094*** | |
+| `just_steal` | 0.166*** | 0.0064 (p=0.098) | both waves 6 and 7 now represented (see Correction, above); M3 no longer underpowered (107 clusters, above the 100 floor); interaction not significant |
 
 ## Limitations
 
 - **Construct specificity:** the negative control gives a mixed result across
   three comparisons (Result 4/5 synthesis). The pre-registered comparison
   (coefficient magnitude) does not support a "specific to economic norm
-  violation" reading of H1; two exploratory follow-up comparisons point the
-  other way. The pre-registered comparison governs the conclusion, but the
-  mixed picture itself is a limitation worth stating plainly. Beyond that:
-  no suitable negative control was located within the WVS justifiability
+  violation" reading of H1; the incremental-R² comparison points the other
+  way; the `gini_c`-association comparison, which used to point the other
+  way too, is now inconclusive (neither coefficient reaches significance).
+  The pre-registered comparison governs the conclusion, but the mixed
+  picture itself is a limitation worth stating plainly. Beyond that: no
+  suitable negative control was located within the WVS justifiability
   battery at all - `luck_belief` is close to a general
   locus-of-control construct, so the theorized mechanism plausibly extends to
   disengagement from any social norm, not just economic ones, and every
@@ -422,16 +489,25 @@ not standardized like `norm_index`, and are not directly comparable to the
   the reason Stage 2 (identification strategy) and Stage 3 (lab experiment)
   are part of the three-stage design.
 - **Self-reported justifiability is not behavior.**
-- **Sample composition:** the covariate-adjusted sample is 60–61% of the full
-  sample for five of the six outcomes, and 43% for `just_steal` specifically
-  (restricted to waves 6–7, so it starts from a smaller bare denominator too
-  — see Result 3's 39–57% drop-percentage range, which reflects the same
-  gap). Not a random subset of the full sample either way. The unadjusted
-  and adjusted estimates are close for `norm_index`; for
-  `trust` they differ more (see Result 3). Whether the covariate missingness
-  driving this drop (chiefly on `education`) is itself related to
-  `luck_belief` or the outcomes was not tested directly beyond that
-  comparison.
+- **Sample composition:** the covariate-adjusted sample is 89.3–89.5% of the
+  full sample for five of the six outcomes, and 93.7% for `just_steal`
+  specifically (restricted to waves 6–7, so it starts from a smaller bare
+  denominator too — see Result 3's 10.5–10.7% drop-percentage range, well
+  under the pre-registered 30% flag). Not a random subset of the full
+  sample either way, though a much larger and more representative one than
+  in the pre-correction run (see Correction, above). Whether the remaining
+  covariate missingness is itself related to `luck_belief` or the outcomes
+  was not tested directly.
+- **Education crosswalk assumption:** wave 7's `education` values come from
+  a different WVS variable (`X025A_01`, ISCED-2011-based) than waves 3–6
+  (`X025`, an earlier WVS-harmonized 8-category scale) — see Correction,
+  above. Backfilling assumes the two scales' *ranks* align closely enough
+  to use as one ordinal control; this is a reasonable but unverified
+  assumption, not a confirmed item-by-item crosswalk. `education` is a
+  control variable, not the predictor or outcome, which limits how much
+  this could bias the headline estimates, but it hasn't been stress-tested
+  (e.g. by re-running with wave 7 excluded, or with `education` dropped as
+  a control entirely).
 - **Cross-country comparability of survey items is imperfect,** as with any
   pooled multi-country survey instrument.
 - **Country-Gini matching:** 103 of 104 countries matched cleanly to SWIID.
@@ -456,18 +532,18 @@ not standardized like `norm_index`, and are not directly comparable to the
 The pre-registered pattern — luck attribution predicting justification of
 economic norm violation, moderated by inequality — is present in the data,
 correctly signed, statistically robust after correction for multiple
-comparisons, and stable across leverage, coding, sample-composition,
-functional-form, and country-year GDP per capita checks. It is also small: `luck_belief_z` accounts for about
-1% of the variance in `norm_index` and less than 0.1% in `trust`, net of
-country, wave, and demographic factors. The pre-registered negative control
-does not support reading the effect as specific to economic norm violation,
-by the coefficient-magnitude test the registration commits to - but the
-control item (`just_divorce`) has a plausible mechanism of its own (locus of
-control extending to relationship effort), so a large coefficient there is
-consistent with either a response-style artifact or a genuine disposition
-broader than economic beliefs; the data cannot distinguish the two. No
-better negative control was available to resolve this: `luck_belief` is
-close to a general locus-of-control construct, and every candidate
+comparisons, and stable across leverage, coding, and country-year GDP per
+capita checks. It is also small: `luck_belief_z` accounts for about 1% of
+the variance in `norm_index` and about 0.03% in `trust`, net of country,
+wave, and demographic factors. The pre-registered negative control does
+not support reading the effect as specific to economic norm violation, by
+the coefficient-magnitude test the registration commits to - but the
+control item (`just_divorce`) has a plausible mechanism of its own (locus
+of control extending to relationship effort), so a large coefficient there
+is consistent with either a response-style artifact or a genuine
+disposition broader than economic beliefs; the data cannot distinguish the
+two. No better negative control was available to resolve this: `luck_belief`
+is close to a general locus-of-control construct, and every candidate
 justifiability item considered carries either the same disengagement
 mechanism or too much religious/country stratification to be usable, so the
 ambiguity is treated as a structural limitation of the negative-control
@@ -475,10 +551,20 @@ strategy rather than a fixable item choice. All findings - real and robust,
 small in variance-explained terms, and not demonstrated to be
 construct-specific for reasons the study cannot fully resolve - are reported
 together as part of Stage 1's result, consistent with the pre-registration's
-confirmatory design. Two further checks, both exploratory and reported for
-completeness rather than to support or weaken the pre-registered
-conclusion: the composite's reliability varies more across countries than
-the pooled 0.798 alone suggests (Result 6), and a cruder, country-level
+confirmatory design.
+
+This version of the document supersedes an earlier one that had two
+compounding bugs — see Correction, above — the more consequential of which
+silently dropped WVS wave 7 (~30% of the sample) from every
+covariate-adjusted model. The core confirmatory result is unchanged in
+direction and significance; what changed is that `just_steal`'s apparent
+Gini effect, previously reported as significant and unusually precise, is
+now shown to have been a rank-deficiency artifact of that dropped wave —
+properly identified, it shows no effect. Two further checks, both
+exploratory and reported for completeness rather than to support or weaken
+the pre-registered conclusion, are entirely unaffected by the correction:
+the composite's reliability varies more across countries than the pooled
+0.798 alone suggests (Result 6), and a cruder, country-level
 diff-in-differences-style comparison of Gini-rising vs. Gini-stable
 countries finds the predicted direction but no statistically
 distinguishable effect (Result 7) — a much lower-powered version of the
@@ -495,7 +581,7 @@ same test M3 already answers with individual-level data.
 - `output/tables/reliability_by_group.csv` — Cronbach's alpha by country and by wave (not pre-registered)
 - `output/tables/gini_movers_did.csv` — the country-level Gini-movers diff-in-differences-style comparison (not pre-registered, not causally identified)
 - `output/figures/gini_movers_did.png` — the same comparison, plotted
-- `output/tables/data_quality_checks.csv` — the 21 data-quality checks run before modeling
+- `output/tables/data_quality_checks.csv` — the 23 data-quality checks run before modeling
 - `output/tables/reliability_check.csv` — Cronbach's alpha (0.798) for the composite
 - `output/figures/negative_control_comparison.png` — negative-control comparison, plotted
 - `output/figures/marginal_effect_norm_index.png` — H2's interaction across the Gini range
