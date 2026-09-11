@@ -5,6 +5,20 @@ Pre-registered: [osf.io/3gvfk](https://osf.io/3gvfk/overview) (accepted 2026-08-
 Full pipeline output: [`output/pipeline_run_log.txt`](output/pipeline_run_log.txt)
 Sample: WVS Longitudinal file v5.0, waves 3–7, merged with SWIID Gini — 322,373 respondents, 104 countries, 231 country-wave clusters
 
+**In brief:** people who believe success comes mostly from luck and
+connections rather than hard work are more willing to justify economic
+cheating — a 1-SD increase in that belief predicts a 0.082-point rise in
+the norm-violation composite, within the same country and survey wave
+(H1, p<0.0001) — and that relationship strengthens where inequality is
+higher (H2, p=0.005). The same belief also predicts lower institutional
+trust (H3, p=0.0003). All three hold up across every robustness check run.
+
+The complication: the pre-registered negative control (divorce-justifiability)
+has a *larger* coefficient than the headline effect, so H1 isn't shown to be
+specific to economic norm violation — though the control item turns out to
+have a plausible mechanism of its own, and two other comparisons point the
+other way, so this reads as unresolved rather than a clean failure (Result 4).
+
 ---
 
 ## Correction (2026-09-10)
