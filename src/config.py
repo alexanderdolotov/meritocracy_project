@@ -112,7 +112,23 @@ WVS_VARS = {
     # --- individual controls -------------------------------------------------
     "X001": "sex",             # 1 male, 2 female
     "X003": "age",
-    "X025": "education",       # highest level attained
+    "X025": "education",       # highest level attained (8-cat, ISCED-97-era; WVS waves 2-6 only)
+    # FOUND 2026-09-10: X025 is 0% populated in wave 7 - WVS re-fielded the
+    # education item under a new code, X025A_01 ("Educational level
+    # respondent: ISCED 11 - one digit", WVS7 only per the data dictionary,
+    # 98.9% covered there), because wave 7 switched to the ISCED-2011
+    # standard. Left unmapped, every model using `education` as a control
+    # (i.e. every M1/M2/M3 spec, for every outcome) silently dropped 100% of
+    # wave 7 - the largest wave (~30% of the base sample) - via listwise
+    # deletion, with no error or warning. X025R (WVS's own cross-vintage
+    # harmonized recode, all waves) exists but collapses to just 3 categories
+    # and - inspected directly - has *worse* coverage than X025 in waves
+    # 3/5/6 (17.8-76.6% vs. X025's 91-96%), so switching to it outright would
+    # trade one coverage problem for another. Instead: X025A_01 is loaded
+    # separately (below) and backfilled into `education` for wave-7 rows
+    # only, in build_variables() (01_load_clean.py) - see the comment there
+    # for the ISCED-97-to-2011 category alignment this assumes.
+    "X025A_01": "education_isced11_w7",
     # CONFIRMED against the real v5.0 file: X047 is split into X047_WVS (the
     # harmonized 1-10 scale, 407,296 non-missing, all waves), X047R_WVS (a
     # collapsed 1-3 tertile recode - wrong shape, not used), and X047CS
@@ -143,6 +159,7 @@ VALID_RANGES = {
     "age": (15, 105),
     "income_decile": (1, 10),
     "education": (1, 9),
+    "education_isced11_w7": (0, 8),  # raw ISCED-11 one-digit range; shifted +1 and merged into `education` in build_variables()
     "just_divorce": (1, 10),
     "study": (1, 2),
 }

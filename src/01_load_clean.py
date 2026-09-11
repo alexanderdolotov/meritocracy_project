@@ -125,6 +125,30 @@ def clean_missing(df: pd.DataFrame) -> pd.DataFrame:
 
 def build_variables(df: pd.DataFrame) -> pd.DataFrame:
     """Derive the analysis variables."""
+    # Backfill `education` for wave 7 from X025A_01 (see the WVS_VARS
+    # comment in config.py for why this is needed: X025 is 0% populated in
+    # wave 7). X025A_01 is ISCED-2011 one-digit, range 0-8, vs. X025's 8-cat
+    # WVS-harmonized ISCED-97-era scale (range 1-8) - not the same standard,
+    # so this assumes the two scales' *ranks* line up closely enough to use
+    # as one ordinal control: ISCED-2011's "0 = early childhood/no
+    # education" is treated as the same bottom rung as X025's own "1 = no
+    # formal education/incomplete primary" (shift +1, landing 0-8 -> 1-9,
+    # which is why `education`'s VALID_RANGES upper bound is 9, not 8 - that
+    # headroom already existed before this change and is what makes the
+    # shift land cleanly). This is an assumption about cross-vintage
+    # category alignment, not a verified one-to-one crosswalk - flagged
+    # here, and in FINDINGS.md, as a specific, revisitable judgment call.
+    # Only fills where `education` (X025) is actually missing, so waves 3-6
+    # are completely untouched by this.
+    if "education_isced11_w7" in df.columns:
+        before = df["education"].notna().sum() if "education" in df.columns else 0
+        shifted = df["education_isced11_w7"] + 1
+        df["education"] = df["education"].fillna(shifted) if "education" in df.columns else shifted
+        filled = df["education"].notna().sum() - before
+        print(f"  education: backfilled {filled:,} wave-7 rows from X025A_01 "
+              "(ISCED-2011, +1 shift) - see build_variables() comment")
+        df = df.drop(columns=["education_isced11_w7"])
+
     # Trust: WVS codes 1 = can be trusted, 2 = need to be careful. We remap
     # to 1/0 rather than leaving it 1/2 so it works directly as a binary
     # outcome in a linear probability model (an OLS on a 1/2-coded variable

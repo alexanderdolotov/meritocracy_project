@@ -144,7 +144,18 @@ def run_outcome(df: pd.DataFrame, outcome: str, ctrls: list[str]):
     if "gini_c" in df.columns and df["gini_c"].notna().mean() > 0.3:
         # Registered contingency: fewer than MIN_GINI_CLUSTERS_FOR_M3 matched
         # country-wave clusters -> M3 is descriptive-only, not confirmatory.
-        n_gini_clusters = df.loc[df["gini_c"].notna(), CFG.CLUSTER_VAR].nunique()
+        # Must be counted on THIS outcome's actual M3 estimation sample (after
+        # listwise-deleting on the outcome itself and the controls), not on
+        # the raw df's gini_c coverage - that count is the same for every
+        # outcome regardless of its own missingness and never reflects what
+        # M3 is actually fit on. (Found 2026-09-10: this previously used the
+        # raw-df count, which stayed ~207 for every outcome and never
+        # tripped the 100-cluster floor - even for just_steal, whose real M3
+        # sample, restricted to waves 6-7, has only 53 clusters.)
+        m3_needed = [outcome, "luck_belief_z", "gini_c", CFG.CLUSTER_VAR] + ctrls
+        if CFG.WEIGHT_VAR in df.columns:
+            m3_needed = m3_needed + [CFG.WEIGHT_VAR]
+        n_gini_clusters = df.dropna(subset=m3_needed)[CFG.CLUSTER_VAR].nunique()
         underpowered = n_gini_clusters < CFG.MIN_GINI_CLUSTERS_FOR_M3
         label = "M3  + Gini interaction (centered)"
         if underpowered:
