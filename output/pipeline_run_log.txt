@@ -1,5 +1,5 @@
 Reading WVS_TimeSeries_1981_2022_v5_0.csv ...
-  443,488 rows, 18 columns
+  443,488 rows, 19 columns
 Dropped 34,865 rows from waves < 3 (registered exclusion criterion)
 
 Cleaning ...
@@ -7,6 +7,7 @@ Cleaning ...
 Applied inclusion criterion (non-missing predictor + >=1 outcome item): dropped 86,250 rows -> 322,373 remain
 
 Building variables ...
+  education: backfilled 94,546 wave-7 rows from X025A_01 (ISCED-2011, +1 shift) - see build_variables() comment
   building norm_index from: ['just_benefits', 'just_taxes', 'just_bribe', 'just_steal']
   Cronbach's alpha (4 items, n=175,022): 0.798
 
@@ -32,7 +33,7 @@ Dropped 0 rows in country-waves with n < 200
 Complete cases on ['luck_belief', 'norm_index']: 322,373 / 322,373
 
 Data quality checks:
-  ! [WARN] no_duplicate_rows: 2,105 fully-duplicate rows on the ~24 kept columns (expected in large samples - see merge_preserves_row_count for the real check)
+  ! [WARN] no_duplicate_rows: 1,698 fully-duplicate rows on the ~24 kept columns (expected in large samples - see merge_preserves_row_count for the real check)
     [PASS] merge_preserves_row_count: 322,373 rows before merge_inequality(), 322,373 immediately after
     [PASS] gdp_merge_preserves_row_count: 322,373 rows before merge_gdp(), 322,373 immediately after
     [PASS] no_missing_identifiers: 0 missing values across ['country_code', 'wave', 'year', 'country_wave']
@@ -90,7 +91,7 @@ just_bribe        1.000      10.000      1.926      1.910    2436
 just_divorce      1.000      10.000      4.869      3.134    6168
 sex               1.000       2.000      1.521      0.500     266
 age              15.000     103.000     42.027     16.428     963
-education         1.000       8.000      4.774      2.209  109498
+education         1.000       9.000      4.710      2.155   14952
 employment        1.000       8.000      3.270      2.146    8308
 income_decile     1.000      10.000      4.767      2.242   20259
 norm_index       -0.684       4.526     -0.001      0.798       0
@@ -154,197 +155,131 @@ Registered reporting standards (OSF 3gvfk):
 ======================================================================
 Loaded 322,373 rows
 Controls: ['female', 'age', 'age_sq', 'education', 'income_decile']
-  ! covariates drop the norm_index sample by 39.2% (322,373 -> 195,997) - exceeds the pre-registered 30% flag
 
 ======================================================================
 OUTCOME: norm_index
 ======================================================================
 
 --- M1  pooled OLS ---
-n = 195,997   clusters = 159   R2 = 0.0356   WLS (weight)
-  luck_belief_z                  0.0967*** (SE 0.0140)  95% CI [0.0693, 0.1241]
+n = 287,852   clusters = 225   R2 = 0.0328   WLS (weight)
+  luck_belief_z                  0.0944*** (SE 0.0100)  95% CI [0.0748, 0.1141]
 
 --- M2  + country & wave FE ---
-n = 195,997   clusters = 159   R2 = 0.1325   WLS (weight)
-  luck_belief_z                  0.0838*** (SE 0.0080)  95% CI [0.0681, 0.0996]
-  incremental R2 of luck_belief_z on norm_index: 0.0105 (1.05% of variance) - full model R2=0.1325, without luck_belief_z R2=0.1219
+n = 287,852   clusters = 225   R2 = 0.1281   WLS (weight)
+  luck_belief_z                  0.0819*** (SE 0.0060)  95% CI [0.0701, 0.0938]
+  incremental R2 of luck_belief_z on norm_index: 0.0102 (1.02% of variance) - full model R2=0.1281, without luck_belief_z R2=0.1179
 
 --- M3  + Gini interaction (centered) ---
-n = 182,760   clusters = 147   R2 = 0.1292   WLS (weight)
-  luck_belief_z                  0.0828*** (SE 0.0076)  95% CI [0.0680, 0.0976]
-  gini_c                         0.0206*   (SE 0.0099)  95% CI [0.0013, 0.0400]
-  luck_belief_z:gini_c           0.0038*   (SE 0.0015)  95% CI [0.0008, 0.0067]
-  incremental R2 of luck_belief_z:gini_c interaction on norm_index: 0.0016 (0.16% of variance) - full model R2=0.1292, without luck_belief_z:gini_c interaction R2=0.1276
-  -> fitting unadjusted M1 for norm_index (full 322,373-row sample, no covariates, no fixed effects) for comparison
-
---- M1 (norm_index), UNADJUSTED - no covariates, per >30% sample-drop rule ---
-n = 322,373   clusters = 231   R2 = 0.0149   WLS (weight)
-  luck_belief_z                  0.0957*** (SE 0.0106)  95% CI [0.0748, 0.1166]
-  -> [additional, not pre-registered] fitting unadjusted M2 for norm_index (full 322,373-row sample, FE retained, no individual covariates) for comparison
-
---- M2 (norm_index), UNADJUSTED [additional check, not pre-registered] ---
-n = 322,373   clusters = 231   R2 = 0.1126   WLS (weight)
-  luck_belief_z                  0.0854*** (SE 0.0059)  95% CI [0.0739, 0.0969]
+n = 261,207   clusters = 201   R2 = 0.1292   WLS (weight)
+  luck_belief_z                  0.0828*** (SE 0.0061)  95% CI [0.0708, 0.0947]
+  gini_c                         0.0126    (SE 0.0089)  95% CI [-0.0048, 0.0300]
+  luck_belief_z:gini_c           0.0036**  (SE 0.0013)  95% CI [0.0011, 0.0061]
+  incremental R2 of luck_belief_z:gini_c interaction on norm_index: 0.0012 (0.12% of variance) - full model R2=0.1292, without luck_belief_z:gini_c interaction R2=0.1280
   wrote /Users/alexdolotov/Library/CloudStorage/OneDrive-Personal/Projects/stats/meritocracy_project/output/figures/marginal_effect_norm_index.png
-  ! covariates drop the just_benefits sample by 39.3% (315,612 -> 191,482) - exceeds the pre-registered 30% flag
 
 ======================================================================
 OUTCOME: just_benefits
 ======================================================================
 
 --- M1  pooled OLS ---
-n = 191,482   clusters = 158   R2 = 0.0182   WLS (weight)
-  luck_belief_z                  0.1790*** (SE 0.0307)  95% CI [0.1188, 0.2392]
+n = 282,515   clusters = 224   R2 = 0.0180   WLS (weight)
+  luck_belief_z                  0.1892*** (SE 0.0243)  95% CI [0.1416, 0.2367]
 
 --- M2  + country & wave FE ---
-n = 191,482   clusters = 158   R2 = 0.1165   WLS (weight)
-  luck_belief_z                  0.1878*** (SE 0.0186)  95% CI [0.1514, 0.2242]
-  incremental R2 of luck_belief_z on just_benefits: 0.0052 (0.52% of variance) - full model R2=0.1165, without luck_belief_z R2=0.1113
+n = 282,515   clusters = 224   R2 = 0.1132   WLS (weight)
+  luck_belief_z                  0.1847*** (SE 0.0147)  95% CI [0.1558, 0.2135]
+  incremental R2 of luck_belief_z on just_benefits: 0.0049 (0.49% of variance) - full model R2=0.1132, without luck_belief_z R2=0.1083
 
 --- M3  + Gini interaction (centered) ---
-n = 178,433   clusters = 146   R2 = 0.1157   WLS (weight)
-  luck_belief_z                  0.1835*** (SE 0.0175)  95% CI [0.1493, 0.2177]
-  gini_c                         0.0073    (SE 0.0263)  95% CI [-0.0443, 0.0588]
-  luck_belief_z:gini_c           0.0074*   (SE 0.0032)  95% CI [0.0011, 0.0137]
-  incremental R2 of luck_belief_z:gini_c interaction on just_benefits: 0.0006 (0.06% of variance) - full model R2=0.1157, without luck_belief_z:gini_c interaction R2=0.1151
-  -> fitting unadjusted M1 for just_benefits (full 315,612-row sample, no covariates, no fixed effects) for comparison
-
---- M1 (just_benefits), UNADJUSTED - no covariates, per >30% sample-drop rule ---
-n = 315,612   clusters = 230   R2 = 0.0059   WLS (weight)
-  luck_belief_z                  0.1943*** (SE 0.0243)  95% CI [0.1467, 0.2418]
-  -> [additional, not pre-registered] fitting unadjusted M2 for just_benefits (full 315,612-row sample, FE retained, no individual covariates) for comparison
-
---- M2 (just_benefits), UNADJUSTED [additional check, not pre-registered] ---
-n = 315,612   clusters = 230   R2 = 0.1005   WLS (weight)
-  luck_belief_z                  0.1946*** (SE 0.0144)  95% CI [0.1663, 0.2229]
+n = 256,178   clusters = 200   R2 = 0.1176   WLS (weight)
+  luck_belief_z                  0.1852*** (SE 0.0147)  95% CI [0.1564, 0.2140]
+  gini_c                        -0.0241    (SE 0.0270)  95% CI [-0.0769, 0.0288]
+  luck_belief_z:gini_c           0.0075**  (SE 0.0027)  95% CI [0.0023, 0.0127]
+  incremental R2 of luck_belief_z:gini_c interaction on just_benefits: 0.0005 (0.05% of variance) - full model R2=0.1176, without luck_belief_z:gini_c interaction R2=0.1171
   wrote /Users/alexdolotov/Library/CloudStorage/OneDrive-Personal/Projects/stats/meritocracy_project/output/figures/marginal_effect_just_benefits.png
-  ! covariates drop the just_taxes sample by 39.5% (315,582 -> 190,923) - exceeds the pre-registered 30% flag
 
 ======================================================================
 OUTCOME: just_taxes
 ======================================================================
 
 --- M1  pooled OLS ---
-n = 190,923   clusters = 157   R2 = 0.0261   WLS (weight)
-  luck_belief_z                  0.2703*** (SE 0.0332)  95% CI [0.2053, 0.3353]
+n = 282,247   clusters = 223   R2 = 0.0228   WLS (weight)
+  luck_belief_z                  0.2456*** (SE 0.0235)  95% CI [0.1995, 0.2917]
 
 --- M2  + country & wave FE ---
-n = 190,923   clusters = 157   R2 = 0.1059   WLS (weight)
-  luck_belief_z                  0.2017*** (SE 0.0187)  95% CI [0.1651, 0.2383]
-  incremental R2 of luck_belief_z on just_taxes: 0.0072 (0.72% of variance) - full model R2=0.1059, without luck_belief_z R2=0.0987
+n = 282,247   clusters = 223   R2 = 0.0961   WLS (weight)
+  luck_belief_z                  0.1924*** (SE 0.0137)  95% CI [0.1657, 0.2192]
+  incremental R2 of luck_belief_z on just_taxes: 0.0070 (0.70% of variance) - full model R2=0.0961, without luck_belief_z R2=0.0891
 
 --- M3  + Gini interaction (centered) ---
-n = 177,857   clusters = 145   R2 = 0.1007   WLS (weight)
-  luck_belief_z                  0.2005*** (SE 0.0179)  95% CI [0.1655, 0.2355]
-  gini_c                         0.0400*   (SE 0.0189)  95% CI [0.0030, 0.0771]
-  luck_belief_z:gini_c           0.0063    (SE 0.0034)  95% CI [-0.0004, 0.0130]
-  incremental R2 of luck_belief_z:gini_c interaction on just_taxes: 0.0005 (0.05% of variance) - full model R2=0.1007, without luck_belief_z:gini_c interaction R2=0.1002
-  -> fitting unadjusted M1 for just_taxes (full 315,582-row sample, no covariates, no fixed effects) for comparison
-
---- M1 (just_taxes), UNADJUSTED - no covariates, per >30% sample-drop rule ---
-n = 315,582   clusters = 229   R2 = 0.0126   WLS (weight)
-  luck_belief_z                  0.2486*** (SE 0.0247)  95% CI [0.2001, 0.2971]
-  -> [additional, not pre-registered] fitting unadjusted M2 for just_taxes (full 315,582-row sample, FE retained, no individual covariates) for comparison
-
---- M2 (just_taxes), UNADJUSTED [additional check, not pre-registered] ---
-n = 315,582   clusters = 229   R2 = 0.0857   WLS (weight)
-  luck_belief_z                  0.2013*** (SE 0.0135)  95% CI [0.1749, 0.2278]
+n = 255,843   clusters = 199   R2 = 0.0935   WLS (weight)
+  luck_belief_z                  0.1950*** (SE 0.0141)  95% CI [0.1673, 0.2226]
+  gini_c                         0.0221    (SE 0.0170)  95% CI [-0.0112, 0.0553]
+  luck_belief_z:gini_c           0.0061*   (SE 0.0029)  95% CI [0.0005, 0.0117]
+  incremental R2 of luck_belief_z:gini_c interaction on just_taxes: 0.0004 (0.04% of variance) - full model R2=0.0935, without luck_belief_z:gini_c interaction R2=0.0931
   wrote /Users/alexdolotov/Library/CloudStorage/OneDrive-Personal/Projects/stats/meritocracy_project/output/figures/marginal_effect_just_taxes.png
-  ! covariates drop the just_bribe sample by 39.2% (319,937 -> 194,653) - exceeds the pre-registered 30% flag
 
 ======================================================================
 OUTCOME: just_bribe
 ======================================================================
 
 --- M1  pooled OLS ---
-n = 194,653   clusters = 159   R2 = 0.0247   WLS (weight)
-  luck_belief_z                  0.1843*** (SE 0.0331)  95% CI [0.1194, 0.2492]
+n = 286,067   clusters = 225   R2 = 0.0225   WLS (weight)
+  luck_belief_z                  0.1828*** (SE 0.0235)  95% CI [0.1368, 0.2287]
 
 --- M2  + country & wave FE ---
-n = 194,653   clusters = 159   R2 = 0.1031   WLS (weight)
-  luck_belief_z                  0.1608*** (SE 0.0178)  95% CI [0.1258, 0.1957]
-  incremental R2 of luck_belief_z on just_bribe: 0.0068 (0.68% of variance) - full model R2=0.1031, without luck_belief_z R2=0.0963
+n = 286,067   clusters = 225   R2 = 0.0993   WLS (weight)
+  luck_belief_z                  0.1585*** (SE 0.0136)  95% CI [0.1319, 0.1852]
+  incremental R2 of luck_belief_z on just_bribe: 0.0066 (0.66% of variance) - full model R2=0.0993, without luck_belief_z R2=0.0926
 
 --- M3  + Gini interaction (centered) ---
-n = 181,505   clusters = 147   R2 = 0.1063   WLS (weight)
-  luck_belief_z                  0.1584*** (SE 0.0157)  95% CI [0.1276, 0.1891]
-  gini_c                         0.0691*   (SE 0.0314)  95% CI [0.0076, 0.1307]
-  luck_belief_z:gini_c           0.0100*** (SE 0.0030)  95% CI [0.0042, 0.0158]
-  incremental R2 of luck_belief_z:gini_c interaction on just_bribe: 0.0019 (0.19% of variance) - full model R2=0.1063, without luck_belief_z:gini_c interaction R2=0.1043
-  -> fitting unadjusted M1 for just_bribe (full 319,937-row sample, no covariates, no fixed effects) for comparison
-
---- M1 (just_bribe), UNADJUSTED - no covariates, per >30% sample-drop rule ---
-n = 319,937   clusters = 231   R2 = 0.0096   WLS (weight)
-  luck_belief_z                  0.1853*** (SE 0.0251)  95% CI [0.1361, 0.2345]
-  -> [additional, not pre-registered] fitting unadjusted M2 for just_bribe (full 319,937-row sample, FE retained, no individual covariates) for comparison
-
---- M2 (just_bribe), UNADJUSTED [additional check, not pre-registered] ---
-n = 319,937   clusters = 231   R2 = 0.0940   WLS (weight)
-  luck_belief_z                  0.1652*** (SE 0.0132)  95% CI [0.1393, 0.1910]
+n = 259,555   clusters = 201   R2 = 0.1021   WLS (weight)
+  luck_belief_z                  0.1604*** (SE 0.0129)  95% CI [0.1350, 0.1857]
+  gini_c                         0.0534*   (SE 0.0257)  95% CI [0.0031, 0.1037]
+  luck_belief_z:gini_c           0.0094*** (SE 0.0026)  95% CI [0.0043, 0.0145]
+  incremental R2 of luck_belief_z:gini_c interaction on just_bribe: 0.0015 (0.15% of variance) - full model R2=0.1021, without luck_belief_z:gini_c interaction R2=0.1006
   wrote /Users/alexdolotov/Library/CloudStorage/OneDrive-Personal/Projects/stats/meritocracy_project/output/figures/marginal_effect_just_bribe.png
-  ! covariates drop the just_steal sample by 56.7% (181,499 -> 78,521) - exceeds the pre-registered 30% flag
 
 ======================================================================
 OUTCOME: just_steal
 ======================================================================
 
 --- M1  pooled OLS ---
-n = 78,521   clusters = 60   R2 = 0.0304   WLS (weight)
-  luck_belief_z                  0.2325*** (SE 0.0661)  95% CI [0.1031, 0.3620]
+n = 170,117   clusters = 126   R2 = 0.0236   WLS (weight)
+  luck_belief_z                  0.1998*** (SE 0.0311)  95% CI [0.1388, 0.2607]
 
 --- M2  + country & wave FE ---
-n = 78,521   clusters = 60   R2 = 0.1553   WLS (weight)
-  luck_belief_z                  0.1862*** (SE 0.0277)  95% CI [0.1319, 0.2406]
-  incremental R2 of luck_belief_z on just_steal: 0.0104 (1.04% of variance) - full model R2=0.1553, without luck_belief_z R2=0.1449
+n = 170,117   clusters = 126   R2 = 0.1182   WLS (weight)
+  luck_belief_z                  0.1656*** (SE 0.0159)  95% CI [0.1344, 0.1968]
+  incremental R2 of luck_belief_z on just_steal: 0.0083 (0.83% of variance) - full model R2=0.1182, without luck_belief_z R2=0.1099
 
 --- M3  + Gini interaction (centered) ---
-n = 69,676   clusters = 53   R2 = 0.1300   WLS (weight)
-  luck_belief_z                  0.1862*** (SE 0.0289)  95% CI [0.1297, 0.2428]
-  gini_c                         0.0237*** (SE 0.0006)  95% CI [0.0225, 0.0248]
-  luck_belief_z:gini_c           0.0099    (SE 0.0053)  95% CI [-0.0006, 0.0203]
-  incremental R2 of luck_belief_z:gini_c interaction on just_steal: 0.0018 (0.18% of variance) - full model R2=0.1300, without luck_belief_z:gini_c interaction R2=0.1282
-  -> fitting unadjusted M1 for just_steal (full 181,499-row sample, no covariates, no fixed effects) for comparison
-
---- M1 (just_steal), UNADJUSTED - no covariates, per >30% sample-drop rule ---
-n = 181,499   clusters = 126   R2 = 0.0136   WLS (weight)
-  luck_belief_z                  0.2036*** (SE 0.0351)  95% CI [0.1348, 0.2724]
-  -> [additional, not pre-registered] fitting unadjusted M2 for just_steal (full 181,499-row sample, FE retained, no individual covariates) for comparison
-
---- M2 (just_steal), UNADJUSTED [additional check, not pre-registered] ---
-n = 181,499   clusters = 126   R2 = 0.1128   WLS (weight)
-  luck_belief_z                  0.1691*** (SE 0.0156)  95% CI [0.1385, 0.1998]
+n = 147,883   clusters = 107   R2 = 0.1123   WLS (weight)
+  luck_belief_z                  0.1691*** (SE 0.0182)  95% CI [0.1334, 0.2048]
+  gini_c                        -0.0088    (SE 0.0299)  95% CI [-0.0674, 0.0498]
+  luck_belief_z:gini_c           0.0064    (SE 0.0039)  95% CI [-0.0012, 0.0141]
+  incremental R2 of luck_belief_z:gini_c interaction on just_steal: 0.0006 (0.06% of variance) - full model R2=0.1123, without luck_belief_z:gini_c interaction R2=0.1117
   wrote /Users/alexdolotov/Library/CloudStorage/OneDrive-Personal/Projects/stats/meritocracy_project/output/figures/marginal_effect_just_steal.png
-  ! covariates drop the trust sample by 39.7% (311,095 -> 187,606) - exceeds the pre-registered 30% flag
 
 ======================================================================
 OUTCOME: trust
 ======================================================================
 
 --- M1  pooled OLS ---
-n = 187,606   clusters = 158   R2 = 0.0220   WLS (weight)
-  luck_belief_z                 -0.0061    (SE 0.0042)  95% CI [-0.0142, 0.0021]
+n = 278,476   clusters = 224   R2 = 0.0244   WLS (weight)
+  luck_belief_z                 -0.0038    (SE 0.0032)  95% CI [-0.0102, 0.0025]
 
 --- M2  + country & wave FE ---
-n = 187,606   clusters = 158   R2 = 0.1325   WLS (weight)
-  luck_belief_z                 -0.0098*** (SE 0.0022)  95% CI [-0.0142, -0.0055]
-  incremental R2 of luck_belief_z on trust: 0.0004 (0.04% of variance) - full model R2=0.1325, without luck_belief_z R2=0.1321
+n = 278,476   clusters = 224   R2 = 0.1306   WLS (weight)
+  luck_belief_z                 -0.0073*** (SE 0.0019)  95% CI [-0.0111, -0.0036]
+  incremental R2 of luck_belief_z on trust: 0.0003 (0.03% of variance) - full model R2=0.1306, without luck_belief_z R2=0.1303
 
 --- M3  + Gini interaction (centered) ---
-n = 174,813   clusters = 146   R2 = 0.1369   WLS (weight)
-  luck_belief_z                 -0.0104*** (SE 0.0022)  95% CI [-0.0147, -0.0061]
-  gini_c                         0.0037    (SE 0.0033)  95% CI [-0.0027, 0.0101]
-  luck_belief_z:gini_c           0.0010*** (SE 0.0003)  95% CI [0.0004, 0.0015]
-  incremental R2 of luck_belief_z:gini_c interaction on trust: 0.0003 (0.03% of variance) - full model R2=0.1369, without luck_belief_z:gini_c interaction R2=0.1366
-  -> fitting unadjusted M1 for trust (full 311,095-row sample, no covariates, no fixed effects) for comparison
-
---- M1 (trust), UNADJUSTED - no covariates, per >30% sample-drop rule ---
-n = 311,095   clusters = 230   R2 = 0.0001   WLS (weight)
-  luck_belief_z                 -0.0046    (SE 0.0033)  95% CI [-0.0112, 0.0019]
-  -> [additional, not pre-registered] fitting unadjusted M2 for trust (full 311,095-row sample, FE retained, no individual covariates) for comparison
-
---- M2 (trust), UNADJUSTED [additional check, not pre-registered] ---
-n = 311,095   clusters = 230   R2 = 0.1174   WLS (weight)
-  luck_belief_z                 -0.0081*** (SE 0.0019)  95% CI [-0.0118, -0.0043]
+n = 252,382   clusters = 200   R2 = 0.1359   WLS (weight)
+  luck_belief_z                 -0.0078*** (SE 0.0020)  95% CI [-0.0116, -0.0039]
+  gini_c                         0.0031    (SE 0.0031)  95% CI [-0.0030, 0.0092]
+  luck_belief_z:gini_c           0.0008*** (SE 0.0002)  95% CI [0.0003, 0.0013]
+  incremental R2 of luck_belief_z:gini_c interaction on trust: 0.0002 (0.02% of variance) - full model R2=0.1359, without luck_belief_z:gini_c interaction R2=0.1357
   wrote /Users/alexdolotov/Library/CloudStorage/OneDrive-Personal/Projects/stats/meritocracy_project/output/figures/marginal_effect_trust.png
 
 ######################################################################
@@ -356,81 +291,69 @@ OUTCOME: just_divorce
 ======================================================================
 
 --- M1  pooled OLS ---
-n = 192,349   clusters = 159   R2 = 0.0307   WLS (weight)
-  luck_belief_z                  0.2992*** (SE 0.0396)  95% CI [0.2216, 0.3769]
+n = 283,082   clusters = 225   R2 = 0.0328   WLS (weight)
+  luck_belief_z                  0.2627*** (SE 0.0334)  95% CI [0.1973, 0.3282]
 
 --- M2  + country & wave FE ---
-n = 192,349   clusters = 159   R2 = 0.2375   WLS (weight)
-  luck_belief_z                  0.1310*** (SE 0.0154)  95% CI [0.1009, 0.1611]
-  incremental R2 of luck_belief_z on just_divorce: 0.0016 (0.16% of variance) - full model R2=0.2375, without luck_belief_z R2=0.2359
+n = 283,082   clusters = 225   R2 = 0.2396   WLS (weight)
+  luck_belief_z                  0.1093*** (SE 0.0133)  95% CI [0.0833, 0.1353]
+  incremental R2 of luck_belief_z on just_divorce: 0.0011 (0.11% of variance) - full model R2=0.2396, without luck_belief_z R2=0.2385
 
 --- M3  + Gini interaction (centered) ---
-n = 179,294   clusters = 147   R2 = 0.2443   WLS (weight)
-  luck_belief_z                  0.1364*** (SE 0.0155)  95% CI [0.1060, 0.1667]
-  gini_c                        -0.0909**  (SE 0.0320)  95% CI [-0.1537, -0.0281]
-  luck_belief_z:gini_c          -0.0019    (SE 0.0022)  95% CI [-0.0063, 0.0024]
-  incremental R2 of luck_belief_z:gini_c interaction on just_divorce: 0.0000 (0.00% of variance) - full model R2=0.2443, without luck_belief_z:gini_c interaction R2=0.2443
+n = 256,735   clusters = 201   R2 = 0.2403   WLS (weight)
+  luck_belief_z                  0.1119*** (SE 0.0137)  95% CI [0.0849, 0.1388]
+  gini_c                        -0.0458    (SE 0.0290)  95% CI [-0.1027, 0.0111]
+  luck_belief_z:gini_c          -0.0023    (SE 0.0020)  95% CI [-0.0061, 0.0016]
+  incremental R2 of luck_belief_z:gini_c interaction on just_divorce: 0.0000 (0.00% of variance) - full model R2=0.2403, without luck_belief_z:gini_c interaction R2=0.2403
 
 wrote /Users/alexdolotov/Library/CloudStorage/OneDrive-Personal/Projects/stats/meritocracy_project/output/tables/regression_results.csv
-      outcome                spec                 term    coef     se      p      n     r2  underpowered
-   norm_index                  M1        luck_belief_z  0.0967 0.0140 0.0000 195997 0.0356         False
-   norm_index                  M2        luck_belief_z  0.0838 0.0080 0.0000 195997 0.1325         False
-   norm_index                  M3        luck_belief_z  0.0828 0.0076 0.0000 182760 0.1292         False
-   norm_index                  M3               gini_c  0.0206 0.0099 0.0365 182760 0.1292         False
-   norm_index                  M3 luck_belief_z:gini_c  0.0038 0.0015 0.0128 182760 0.1292         False
-   norm_index       M1_unadjusted        luck_belief_z  0.0957 0.0106 0.0000 322373 0.0149         False
-   norm_index M2_unadjusted_EXTRA        luck_belief_z  0.0854 0.0059 0.0000 322373 0.1126         False
-just_benefits                  M1        luck_belief_z  0.1790 0.0307 0.0000 191482 0.0182         False
-just_benefits                  M2        luck_belief_z  0.1878 0.0186 0.0000 191482 0.1165         False
-just_benefits                  M3        luck_belief_z  0.1835 0.0175 0.0000 178433 0.1157         False
-just_benefits                  M3               gini_c  0.0073 0.0263 0.7822 178433 0.1157         False
-just_benefits                  M3 luck_belief_z:gini_c  0.0074 0.0032 0.0209 178433 0.1157         False
-just_benefits       M1_unadjusted        luck_belief_z  0.1943 0.0243 0.0000 315612 0.0059         False
-just_benefits M2_unadjusted_EXTRA        luck_belief_z  0.1946 0.0144 0.0000 315612 0.1005         False
-   just_taxes                  M1        luck_belief_z  0.2703 0.0332 0.0000 190923 0.0261         False
-   just_taxes                  M2        luck_belief_z  0.2017 0.0187 0.0000 190923 0.1059         False
-   just_taxes                  M3        luck_belief_z  0.2005 0.0179 0.0000 177857 0.1007         False
-   just_taxes                  M3               gini_c  0.0400 0.0189 0.0341 177857 0.1007         False
-   just_taxes                  M3 luck_belief_z:gini_c  0.0063 0.0034 0.0641 177857 0.1007         False
-   just_taxes       M1_unadjusted        luck_belief_z  0.2486 0.0247 0.0000 315582 0.0126         False
-   just_taxes M2_unadjusted_EXTRA        luck_belief_z  0.2013 0.0135 0.0000 315582 0.0857         False
-   just_bribe                  M1        luck_belief_z  0.1843 0.0331 0.0000 194653 0.0247         False
-   just_bribe                  M2        luck_belief_z  0.1608 0.0178 0.0000 194653 0.1031         False
-   just_bribe                  M3        luck_belief_z  0.1584 0.0157 0.0000 181505 0.1063         False
-   just_bribe                  M3               gini_c  0.0691 0.0314 0.0278 181505 0.1063         False
-   just_bribe                  M3 luck_belief_z:gini_c  0.0100 0.0030 0.0008 181505 0.1063         False
-   just_bribe       M1_unadjusted        luck_belief_z  0.1853 0.0251 0.0000 319937 0.0096         False
-   just_bribe M2_unadjusted_EXTRA        luck_belief_z  0.1652 0.0132 0.0000 319937 0.0940         False
-   just_steal                  M1        luck_belief_z  0.2325 0.0661 0.0004  78521 0.0304         False
-   just_steal                  M2        luck_belief_z  0.1862 0.0277 0.0000  78521 0.1553         False
-   just_steal                  M3        luck_belief_z  0.1862 0.0289 0.0000  69676 0.1300         False
-   just_steal                  M3               gini_c  0.0237 0.0006 0.0000  69676 0.1300         False
-   just_steal                  M3 luck_belief_z:gini_c  0.0099 0.0053 0.0643  69676 0.1300         False
-   just_steal       M1_unadjusted        luck_belief_z  0.2036 0.0351 0.0000 181499 0.0136         False
-   just_steal M2_unadjusted_EXTRA        luck_belief_z  0.1691 0.0156 0.0000 181499 0.1128         False
-        trust                  M1        luck_belief_z -0.0061 0.0042 0.1452 187606 0.0220         False
-        trust                  M2        luck_belief_z -0.0098 0.0022 0.0000 187606 0.1325         False
-        trust                  M3        luck_belief_z -0.0104 0.0022 0.0000 174813 0.1369         False
-        trust                  M3               gini_c  0.0037 0.0033 0.2570 174813 0.1369         False
-        trust                  M3 luck_belief_z:gini_c  0.0010 0.0003 0.0004 174813 0.1369         False
-        trust       M1_unadjusted        luck_belief_z -0.0046 0.0033 0.1648 311095 0.0001         False
-        trust M2_unadjusted_EXTRA        luck_belief_z -0.0081 0.0019 0.0000 311095 0.1174         False
- just_divorce                  M1        luck_belief_z  0.2992 0.0396 0.0000 192349 0.0307         False
- just_divorce                  M2        luck_belief_z  0.1310 0.0154 0.0000 192349 0.2375         False
- just_divorce                  M3        luck_belief_z  0.1364 0.0155 0.0000 179294 0.2443         False
- just_divorce                  M3               gini_c -0.0909 0.0320 0.0046 179294 0.2443         False
- just_divorce                  M3 luck_belief_z:gini_c -0.0019 0.0022 0.3853 179294 0.2443         False
+      outcome spec                 term    coef     se      p      n     r2  underpowered
+   norm_index   M1        luck_belief_z  0.0944 0.0100 0.0000 287852 0.0328         False
+   norm_index   M2        luck_belief_z  0.0819 0.0060 0.0000 287852 0.1281         False
+   norm_index   M3        luck_belief_z  0.0828 0.0061 0.0000 261207 0.1292         False
+   norm_index   M3               gini_c  0.0126 0.0089 0.1556 261207 0.1292         False
+   norm_index   M3 luck_belief_z:gini_c  0.0036 0.0013 0.0051 261207 0.1292         False
+just_benefits   M1        luck_belief_z  0.1892 0.0243 0.0000 282515 0.0180         False
+just_benefits   M2        luck_belief_z  0.1847 0.0147 0.0000 282515 0.1132         False
+just_benefits   M3        luck_belief_z  0.1852 0.0147 0.0000 256178 0.1176         False
+just_benefits   M3               gini_c -0.0241 0.0270 0.3727 256178 0.1176         False
+just_benefits   M3 luck_belief_z:gini_c  0.0075 0.0027 0.0046 256178 0.1176         False
+   just_taxes   M1        luck_belief_z  0.2456 0.0235 0.0000 282247 0.0228         False
+   just_taxes   M2        luck_belief_z  0.1924 0.0137 0.0000 282247 0.0961         False
+   just_taxes   M3        luck_belief_z  0.1950 0.0141 0.0000 255843 0.0935         False
+   just_taxes   M3               gini_c  0.0221 0.0170 0.1935 255843 0.0935         False
+   just_taxes   M3 luck_belief_z:gini_c  0.0061 0.0029 0.0342 255843 0.0935         False
+   just_bribe   M1        luck_belief_z  0.1828 0.0235 0.0000 286067 0.0225         False
+   just_bribe   M2        luck_belief_z  0.1585 0.0136 0.0000 286067 0.0993         False
+   just_bribe   M3        luck_belief_z  0.1604 0.0129 0.0000 259555 0.1021         False
+   just_bribe   M3               gini_c  0.0534 0.0257 0.0374 259555 0.1021         False
+   just_bribe   M3 luck_belief_z:gini_c  0.0094 0.0026 0.0003 259555 0.1021         False
+   just_steal   M1        luck_belief_z  0.1998 0.0311 0.0000 170117 0.0236         False
+   just_steal   M2        luck_belief_z  0.1656 0.0159 0.0000 170117 0.1182         False
+   just_steal   M3        luck_belief_z  0.1691 0.0182 0.0000 147883 0.1123         False
+   just_steal   M3               gini_c -0.0088 0.0299 0.7689 147883 0.1123         False
+   just_steal   M3 luck_belief_z:gini_c  0.0064 0.0039 0.0980 147883 0.1123         False
+        trust   M1        luck_belief_z -0.0038 0.0032 0.2359 278476 0.0244         False
+        trust   M2        luck_belief_z -0.0073 0.0019 0.0001 278476 0.1306         False
+        trust   M3        luck_belief_z -0.0078 0.0020 0.0001 252382 0.1359         False
+        trust   M3               gini_c  0.0031 0.0031 0.3178 252382 0.1359         False
+        trust   M3 luck_belief_z:gini_c  0.0008 0.0002 0.0007 252382 0.1359         False
+ just_divorce   M1        luck_belief_z  0.2627 0.0334 0.0000 283082 0.0328         False
+ just_divorce   M2        luck_belief_z  0.1093 0.0133 0.0000 283082 0.2396         False
+ just_divorce   M3        luck_belief_z  0.1119 0.0137 0.0000 256735 0.2403         False
+ just_divorce   M3               gini_c -0.0458 0.0290 0.1150 256735 0.2403         False
+ just_divorce   M3 luck_belief_z:gini_c -0.0023 0.0020 0.2494 256735 0.2403         False
 
 ======================================================================
 COVARIATE SAMPLE-DROP CHECK (pre-registered, OSF 3gvfk)
 ======================================================================
       outcome  bare_n  full_n  drop_pct  flagged
-   norm_index  322373  195997      39.2     True
-just_benefits  315612  191482      39.3     True
-   just_taxes  315582  190923      39.5     True
-   just_bribe  319937  194653      39.2     True
-   just_steal  181499   78521      56.7     True
-        trust  311095  187606      39.7     True
+   norm_index  322373  287852      10.7    False
+just_benefits  315612  282515      10.5    False
+   just_taxes  315582  282247      10.6    False
+   just_bribe  319937  286067      10.6    False
+   just_steal  181499  170117       6.3    False
+        trust  311095  278476      10.5    False
 
 wrote /Users/alexdolotov/Library/CloudStorage/OneDrive-Personal/Projects/stats/meritocracy_project/output/tables/sample_drop_report.csv
 
@@ -438,9 +361,9 @@ wrote /Users/alexdolotov/Library/CloudStorage/OneDrive-Personal/Projects/stats/m
 PRIMARY CONFIRMATORY TESTS (Holm-Bonferroni corrected, OSF 3gvfk)
 ======================================================================
                                     hypothesis    outcome spec                 term    coef  p_raw  underpowered  p_holm
-H1: luck_belief -> norm_index (within-country) norm_index   M2        luck_belief_z  0.0838 0.0000         False  0.0000
-      H2: luck_belief x inequality interaction norm_index   M3 luck_belief_z:gini_c  0.0038 0.0128         False  0.0128
-     H3: luck_belief -> trust (within-country)      trust   M2        luck_belief_z -0.0098 0.0000         False  0.0000
+H1: luck_belief -> norm_index (within-country) norm_index   M2        luck_belief_z  0.0819 0.0000         False  0.0000
+      H2: luck_belief x inequality interaction norm_index   M3 luck_belief_z:gini_c  0.0036 0.0051         False  0.0051
+     H3: luck_belief -> trust (within-country)      trust   M2        luck_belief_z -0.0073 0.0001         False  0.0003
 
 wrote /Users/alexdolotov/Library/CloudStorage/OneDrive-Personal/Projects/stats/meritocracy_project/output/tables/primary_tests_holm.csv
 
@@ -448,27 +371,27 @@ wrote /Users/alexdolotov/Library/CloudStorage/OneDrive-Personal/Projects/stats/m
 INCREMENTAL R2 (not pre-registered): unique variance explained by each term
 ======================================================================
       outcome                             term      n  r2_full  r2_reduced  incremental_r2  incremental_r2_pct
-   norm_index                    luck_belief_z 195997   0.1325      0.1219          0.0105                1.05
-   norm_index luck_belief_z:gini_c interaction 182760   0.1292      0.1276          0.0016                0.16
-just_benefits                    luck_belief_z 191482   0.1165      0.1113          0.0052                0.52
-just_benefits luck_belief_z:gini_c interaction 178433   0.1157      0.1151          0.0006                0.06
-   just_taxes                    luck_belief_z 190923   0.1059      0.0987          0.0072                0.72
-   just_taxes luck_belief_z:gini_c interaction 177857   0.1007      0.1002          0.0005                0.05
-   just_bribe                    luck_belief_z 194653   0.1031      0.0963          0.0068                0.68
-   just_bribe luck_belief_z:gini_c interaction 181505   0.1063      0.1043          0.0019                0.19
-   just_steal                    luck_belief_z  78521   0.1553      0.1449          0.0104                1.04
-   just_steal luck_belief_z:gini_c interaction  69676   0.1300      0.1282          0.0018                0.18
-        trust                    luck_belief_z 187606   0.1325      0.1321          0.0004                0.04
-        trust luck_belief_z:gini_c interaction 174813   0.1369      0.1366          0.0003                0.03
- just_divorce                    luck_belief_z 192349   0.2375      0.2359          0.0016                0.16
- just_divorce luck_belief_z:gini_c interaction 179294   0.2443      0.2443          0.0000                0.00
+   norm_index                    luck_belief_z 287852   0.1281      0.1179          0.0102                1.02
+   norm_index luck_belief_z:gini_c interaction 261207   0.1292      0.1280          0.0012                0.12
+just_benefits                    luck_belief_z 282515   0.1132      0.1083          0.0049                0.49
+just_benefits luck_belief_z:gini_c interaction 256178   0.1176      0.1171          0.0005                0.05
+   just_taxes                    luck_belief_z 282247   0.0961      0.0891          0.0070                0.70
+   just_taxes luck_belief_z:gini_c interaction 255843   0.0935      0.0931          0.0004                0.04
+   just_bribe                    luck_belief_z 286067   0.0993      0.0926          0.0066                0.66
+   just_bribe luck_belief_z:gini_c interaction 259555   0.1021      0.1006          0.0015                0.15
+   just_steal                    luck_belief_z 170117   0.1182      0.1099          0.0083                0.83
+   just_steal luck_belief_z:gini_c interaction 147883   0.1123      0.1117          0.0006                0.06
+        trust                    luck_belief_z 278476   0.1306      0.1303          0.0003                0.03
+        trust luck_belief_z:gini_c interaction 252382   0.1359      0.1357          0.0002                0.02
+ just_divorce                    luck_belief_z 283082   0.2396      0.2385          0.0011                0.11
+ just_divorce luck_belief_z:gini_c interaction 256735   0.2403      0.2403          0.0000                0.00
 
 wrote /Users/alexdolotov/Library/CloudStorage/OneDrive-Personal/Projects/stats/meritocracy_project/output/tables/incremental_r2.csv
 
 ======================================================================
 ROBUSTNESS: logit(trust) as an alternative to the LPM used in M1-M3
 ======================================================================
-  luck_belief_z (log-odds): -0.0633  SE 0.0139  95% CI [-0.0906, -0.0360]
+  luck_belief_z (log-odds): -0.0458  SE 0.0126  95% CI [-0.0704, -0.0211]
   (log-odds, not AME - convert via model.get_margeff() if needed for writeup)
 
 ======================================================================
@@ -481,27 +404,27 @@ ROBUSTNESS: leverage-based influence diagnostics on M2 (norm_index)
 ======================================================================
 
 --- M2 (norm_index), all clusters ---
-n = 195,997   clusters = 159   R2 = 0.1325   WLS (weight)
-  luck_belief_z                  0.0838*** (SE 0.0080)  95% CI [0.0681, 0.0996]
-  16/159 clusters flagged (mean leverage > 90%ile = 0.00110)
+n = 287,852   clusters = 225   R2 = 0.1281   WLS (weight)
+  luck_belief_z                  0.0819*** (SE 0.0060)  95% CI [0.0701, 0.0938]
+  23/225 clusters flagged (mean leverage > 90%ile = 0.00089)
 
---- M2 (norm_index), 16 high-leverage clusters excluded ---
-n = 185,372   clusters = 143   R2 = 0.1360   WLS (weight)
-  luck_belief_z                  0.0866*** (SE 0.0086)  95% CI [0.0697, 0.1036]
+--- M2 (norm_index), 23 high-leverage clusters excluded ---
+n = 268,931   clusters = 202   R2 = 0.1282   WLS (weight)
+  luck_belief_z                  0.0840*** (SE 0.0065)  95% CI [0.0713, 0.0968]
 
 ======================================================================
 ROBUSTNESS: ['education', 'income_decile'] as dummies instead of ordinal scales (M2, norm_index)
 ======================================================================
 
 --- M2, ordinal-coded education/income ---
-n = 195,997   clusters = 159   R2 = 0.1325   WLS (weight)
-  luck_belief_z                  0.0838*** (SE 0.0080)  95% CI [0.0681, 0.0996]
+n = 287,852   clusters = 225   R2 = 0.1281   WLS (weight)
+  luck_belief_z                  0.0819*** (SE 0.0060)  95% CI [0.0701, 0.0938]
 
 --- M2, dummy-coded education/income ---
-n = 195,997   clusters = 159   R2 = 0.1330   WLS (weight)
-  luck_belief_z                  0.0836*** (SE 0.0080)  95% CI [0.0679, 0.0993]
+n = 287,852   clusters = 225   R2 = 0.1285   WLS (weight)
+  luck_belief_z                  0.0819*** (SE 0.0060)  95% CI [0.0701, 0.0937]
 
-  luck_belief_z: ordinal=0.0838  dummy=0.0836  (0.2% change)
+  luck_belief_z: ordinal=0.0819  dummy=0.0819  (0.0% change)
 
 ======================================================================
 ADDITIONAL CHECK (not pre-registered): does luck_belief_z / gini_c
@@ -509,122 +432,122 @@ survive controlling for country-year GDP per capita (PPP)?
 ======================================================================
 
 --- M2+GDP (norm_index) ---
-n = 191,178   clusters = 153   R2 = 0.1355   WLS (weight)
-  luck_belief_z                  0.0850*** (SE 0.0083)  95% CI [0.0688, 0.1012]
-  norm_index M2 luck_belief_z: baseline=0.0838  with GDP=0.0850  (1.4% change)
+n = 280,623   clusters = 217   R2 = 0.1301   WLS (weight)
+  luck_belief_z                  0.0822*** (SE 0.0062)  95% CI [0.0701, 0.0943]
+  norm_index M2 luck_belief_z: baseline=0.0819  with GDP=0.0822  (0.3% change)
 
 --- M3+GDP (norm_index) ---
-n = 178,145   clusters = 142   R2 = 0.1315   WLS (weight)
-  luck_belief_z                  0.0830*** (SE 0.0077)  95% CI [0.0680, 0.0980]
-  gini_c                         0.0214*   (SE 0.0103)  95% CI [0.0011, 0.0416]
-  luck_belief_z:gini_c           0.0038*   (SE 0.0015)  95% CI [0.0009, 0.0068]
-  norm_index M3 gini_c: baseline=0.0206  with GDP=0.0214  (3.6% change)
-  norm_index M3 luck_belief_z:gini_c: baseline=0.0038  with GDP=0.0038  (2.0% change)
+n = 254,182   clusters = 194   R2 = 0.1312   WLS (weight)
+  luck_belief_z                  0.0821*** (SE 0.0062)  95% CI [0.0700, 0.0942]
+  gini_c                         0.0159    (SE 0.0094)  95% CI [-0.0025, 0.0344]
+  luck_belief_z:gini_c           0.0036**  (SE 0.0013)  95% CI [0.0011, 0.0061]
+  norm_index M3 gini_c: baseline=0.0126  with GDP=0.0159  (26.4% change)
+  norm_index M3 luck_belief_z:gini_c: baseline=0.0036  with GDP=0.0036  (0.6% change)
 
 --- M2+GDP (just_benefits) ---
-n = 186,765   clusters = 152   R2 = 0.1191   WLS (weight)
-  luck_belief_z                  0.1880*** (SE 0.0190)  95% CI [0.1507, 0.2252]
-  just_benefits M2 luck_belief_z: baseline=0.1878  with GDP=0.1880  (0.1% change)
+n = 275,388   clusters = 216   R2 = 0.1155   WLS (weight)
+  luck_belief_z                  0.1827*** (SE 0.0149)  95% CI [0.1535, 0.2118]
+  just_benefits M2 luck_belief_z: baseline=0.1847  with GDP=0.1827  (1.1% change)
 
 --- M3+GDP (just_benefits) ---
-n = 173,915   clusters = 141   R2 = 0.1180   WLS (weight)
-  luck_belief_z                  0.1810*** (SE 0.0175)  95% CI [0.1467, 0.2153]
-  gini_c                         0.0062    (SE 0.0268)  95% CI [-0.0464, 0.0587]
-  luck_belief_z:gini_c           0.0078*   (SE 0.0032)  95% CI [0.0015, 0.0141]
-  just_benefits M3 gini_c: baseline=0.0073  with GDP=0.0062  (15.1% change)
-  just_benefits M3 luck_belief_z:gini_c: baseline=0.0074  with GDP=0.0078  (5.4% change)
+n = 249,250   clusters = 193   R2 = 0.1200   WLS (weight)
+  luck_belief_z                  0.1799*** (SE 0.0146)  95% CI [0.1512, 0.2085]
+  gini_c                        -0.0091    (SE 0.0267)  95% CI [-0.0615, 0.0432]
+  luck_belief_z:gini_c           0.0076**  (SE 0.0027)  95% CI [0.0023, 0.0129]
+  just_benefits M3 gini_c: baseline=-0.0241  with GDP=-0.0091  (62.1% change)
+  just_benefits M3 luck_belief_z:gini_c: baseline=0.0075  with GDP=0.0076  (1.4% change)
 
 --- M2+GDP (just_taxes) ---
-n = 186,175   clusters = 151   R2 = 0.1086   WLS (weight)
-  luck_belief_z                  0.2046*** (SE 0.0191)  95% CI [0.1673, 0.2420]
-  just_taxes M2 luck_belief_z: baseline=0.2017  with GDP=0.2046  (1.4% change)
+n = 275,089   clusters = 215   R2 = 0.0979   WLS (weight)
+  luck_belief_z                  0.1932*** (SE 0.0140)  95% CI [0.1657, 0.2206]
+  just_taxes M2 luck_belief_z: baseline=0.1924  with GDP=0.1932  (0.4% change)
 
 --- M3+GDP (just_taxes) ---
-n = 173,298   clusters = 140   R2 = 0.1029   WLS (weight)
-  luck_belief_z                  0.2014*** (SE 0.0181)  95% CI [0.1659, 0.2369]
-  gini_c                         0.0443*   (SE 0.0192)  95% CI [0.0066, 0.0819]
-  luck_belief_z:gini_c           0.0064    (SE 0.0034)  95% CI [-0.0002, 0.0130]
-  just_taxes M3 gini_c: baseline=0.0400  with GDP=0.0443  (10.6% change)
-  just_taxes M3 luck_belief_z:gini_c: baseline=0.0063  with GDP=0.0064  (1.1% change)
+n = 248,874   clusters = 192   R2 = 0.0954   WLS (weight)
+  luck_belief_z                  0.1937*** (SE 0.0143)  95% CI [0.1656, 0.2217]
+  gini_c                         0.0339    (SE 0.0184)  95% CI [-0.0021, 0.0699]
+  luck_belief_z:gini_c           0.0061*   (SE 0.0029)  95% CI [0.0004, 0.0117]
+  just_taxes M3 gini_c: baseline=0.0221  with GDP=0.0339  (53.7% change)
+  just_taxes M3 luck_belief_z:gini_c: baseline=0.0061  with GDP=0.0061  (0.3% change)
 
 --- M2+GDP (just_bribe) ---
-n = 189,866   clusters = 153   R2 = 0.1048   WLS (weight)
-  luck_belief_z                  0.1638*** (SE 0.0184)  95% CI [0.1278, 0.1999]
-  just_bribe M2 luck_belief_z: baseline=0.1608  with GDP=0.1638  (1.9% change)
+n = 278,870   clusters = 217   R2 = 0.1009   WLS (weight)
+  luck_belief_z                  0.1598*** (SE 0.0140)  95% CI [0.1324, 0.1871]
+  just_bribe M2 luck_belief_z: baseline=0.1585  with GDP=0.1598  (0.8% change)
 
 --- M3+GDP (just_bribe) ---
-n = 176,920   clusters = 142   R2 = 0.1079   WLS (weight)
-  luck_belief_z                  0.1596*** (SE 0.0160)  95% CI [0.1282, 0.1911]
-  gini_c                         0.0676*   (SE 0.0307)  95% CI [0.0073, 0.1278]
-  luck_belief_z:gini_c           0.0101*** (SE 0.0030)  95% CI [0.0042, 0.0160]
-  just_bribe M3 gini_c: baseline=0.0691  with GDP=0.0676  (2.2% change)
-  just_bribe M3 luck_belief_z:gini_c: baseline=0.0100  with GDP=0.0101  (1.1% change)
+n = 252,560   clusters = 194   R2 = 0.1036   WLS (weight)
+  luck_belief_z                  0.1602*** (SE 0.0132)  95% CI [0.1344, 0.1860]
+  gini_c                         0.0514    (SE 0.0267)  95% CI [-0.0010, 0.1038]
+  luck_belief_z:gini_c           0.0096*** (SE 0.0026)  95% CI [0.0044, 0.0147]
+  just_bribe M3 gini_c: baseline=0.0534  with GDP=0.0514  (3.8% change)
+  just_bribe M3 luck_belief_z:gini_c: baseline=0.0094  with GDP=0.0096  (1.6% change)
 
 --- M2+GDP (just_steal) ---
-n = 76,848   clusters = 58   R2 = 0.1560   WLS (weight)
-  luck_belief_z                  0.1873*** (SE 0.0282)  95% CI [0.1320, 0.2427]
-  just_steal M2 luck_belief_z: baseline=0.1862  with GDP=0.1873  (0.6% change)
+n = 166,034   clusters = 122   R2 = 0.1192   WLS (weight)
+  luck_belief_z                  0.1657*** (SE 0.0162)  95% CI [0.1339, 0.1975]
+  just_steal M2 luck_belief_z: baseline=0.1656  with GDP=0.1657  (0.1% change)
 
 --- M3+GDP (just_steal) ---
-n = 68,003   clusters = 51   R2 = 0.1306   WLS (weight)
-  luck_belief_z                  0.1863*** (SE 0.0293)  95% CI [0.1289, 0.2437]
-  gini_c                         0.0242*** (SE 0.0005)  95% CI [0.0232, 0.0253]
-  luck_belief_z:gini_c           0.0098    (SE 0.0054)  95% CI [-0.0008, 0.0204]
-  just_steal M3 gini_c: baseline=0.0237  with GDP=0.0242  (2.3% change)
-  just_steal M3 luck_belief_z:gini_c: baseline=0.0099  with GDP=0.0098  (1.0% change)
+n = 143,800   clusters = 103   R2 = 0.1135   WLS (weight)
+  luck_belief_z                  0.1683*** (SE 0.0185)  95% CI [0.1320, 0.2046]
+  gini_c                         0.0008    (SE 0.0340)  95% CI [-0.0658, 0.0673]
+  luck_belief_z:gini_c           0.0063    (SE 0.0040)  95% CI [-0.0015, 0.0140]
+  just_steal M3 gini_c: baseline=-0.0088  with GDP=0.0008  (108.9% change)
+  just_steal M3 luck_belief_z:gini_c: baseline=0.0064  with GDP=0.0063  (2.9% change)
 
 --- M2+GDP (trust) ---
-n = 182,876   clusters = 152   R2 = 0.1372   WLS (weight)
-  luck_belief_z                 -0.0108*** (SE 0.0023)  95% CI [-0.0152, -0.0063]
-  trust M2 luck_belief_z: baseline=-0.0098  with GDP=-0.0108  (9.9% change)
+n = 271,336   clusters = 216   R2 = 0.1345   WLS (weight)
+  luck_belief_z                 -0.0079*** (SE 0.0020)  95% CI [-0.0117, -0.0041]
+  trust M2 luck_belief_z: baseline=-0.0073  with GDP=-0.0079  (7.9% change)
 
 --- M3+GDP (trust) ---
-n = 170,278   clusters = 141   R2 = 0.1412   WLS (weight)
-  luck_belief_z                 -0.0112*** (SE 0.0022)  95% CI [-0.0155, -0.0069]
-  gini_c                         0.0025    (SE 0.0034)  95% CI [-0.0041, 0.0091]
-  luck_belief_z:gini_c           0.0010*** (SE 0.0003)  95% CI [0.0004, 0.0015]
-  trust M3 gini_c: baseline=0.0037  with GDP=0.0025  (31.6% change)
-  trust M3 luck_belief_z:gini_c: baseline=0.0010  with GDP=0.0010  (2.2% change)
+n = 245,437   clusters = 193   R2 = 0.1398   WLS (weight)
+  luck_belief_z                 -0.0082*** (SE 0.0020)  95% CI [-0.0121, -0.0043]
+  gini_c                         0.0013    (SE 0.0034)  95% CI [-0.0054, 0.0081]
+  luck_belief_z:gini_c           0.0008*** (SE 0.0002)  95% CI [0.0004, 0.0013]
+  trust M3 gini_c: baseline=0.0031  with GDP=0.0013  (56.9% change)
+  trust M3 luck_belief_z:gini_c: baseline=0.0008  with GDP=0.0008  (1.7% change)
 
 --- M2+GDP (just_divorce) ---
-n = 187,601   clusters = 153   R2 = 0.2427   WLS (weight)
-  luck_belief_z                  0.1303*** (SE 0.0153)  95% CI [0.1004, 0.1603]
-  just_divorce M2 luck_belief_z: baseline=0.1310  with GDP=0.1303  (0.5% change)
+n = 275,924   clusters = 217   R2 = 0.2452   WLS (weight)
+  luck_belief_z                  0.1094*** (SE 0.0133)  95% CI [0.0835, 0.1354]
+  just_divorce M2 luck_belief_z: baseline=0.1093  with GDP=0.1094  (0.1% change)
 
 --- M3+GDP (just_divorce) ---
-n = 174,736   clusters = 142   R2 = 0.2496   WLS (weight)
-  luck_belief_z                  0.1400*** (SE 0.0155)  95% CI [0.1095, 0.1704]
-  gini_c                        -0.1024**  (SE 0.0315)  95% CI [-0.1641, -0.0406]
-  luck_belief_z:gini_c          -0.0017    (SE 0.0023)  95% CI [-0.0062, 0.0028]
-  just_divorce M3 gini_c: baseline=-0.0909  with GDP=-0.1024  (12.7% change)
-  just_divorce M3 luck_belief_z:gini_c: baseline=-0.0019  with GDP=-0.0017  (11.5% change)
+n = 249,767   clusters = 194   R2 = 0.2463   WLS (weight)
+  luck_belief_z                  0.1162*** (SE 0.0139)  95% CI [0.0890, 0.1433]
+  gini_c                        -0.0647*   (SE 0.0308)  95% CI [-0.1250, -0.0044]
+  luck_belief_z:gini_c          -0.0020    (SE 0.0020)  95% CI [-0.0060, 0.0020]
+  just_divorce M3 gini_c: baseline=-0.0458  with GDP=-0.0647  (41.3% change)
+  just_divorce M3 luck_belief_z:gini_c: baseline=-0.0023  with GDP=-0.0020  (11.7% change)
 
 ======================================================================
 GDP CONTROL CHECK (not pre-registered): coefficients with vs. without
 country-year GDP per capita added to M2/M3
 ======================================================================
       outcome spec                 term  coef_baseline  coef_with_gdp  pct_change
-   norm_index   M2        luck_belief_z         0.0838         0.0850         1.4
-   norm_index   M3               gini_c         0.0206         0.0214         3.6
-   norm_index   M3 luck_belief_z:gini_c         0.0038         0.0038         2.0
-just_benefits   M2        luck_belief_z         0.1878         0.1880         0.1
-just_benefits   M3               gini_c         0.0073         0.0062        15.1
-just_benefits   M3 luck_belief_z:gini_c         0.0074         0.0078         5.4
-   just_taxes   M2        luck_belief_z         0.2017         0.2046         1.4
-   just_taxes   M3               gini_c         0.0400         0.0443        10.6
-   just_taxes   M3 luck_belief_z:gini_c         0.0063         0.0064         1.1
-   just_bribe   M2        luck_belief_z         0.1608         0.1638         1.9
-   just_bribe   M3               gini_c         0.0691         0.0676         2.2
-   just_bribe   M3 luck_belief_z:gini_c         0.0100         0.0101         1.1
-   just_steal   M2        luck_belief_z         0.1862         0.1873         0.6
-   just_steal   M3               gini_c         0.0237         0.0242         2.3
-   just_steal   M3 luck_belief_z:gini_c         0.0099         0.0098         1.0
-        trust   M2        luck_belief_z        -0.0098        -0.0108         9.9
-        trust   M3               gini_c         0.0037         0.0025        31.6
-        trust   M3 luck_belief_z:gini_c         0.0010         0.0010         2.2
- just_divorce   M2        luck_belief_z         0.1310         0.1303         0.5
- just_divorce   M3               gini_c        -0.0909        -0.1024        12.7
- just_divorce   M3 luck_belief_z:gini_c        -0.0019        -0.0017        11.5
+   norm_index   M2        luck_belief_z         0.0819         0.0822         0.3
+   norm_index   M3               gini_c         0.0126         0.0159        26.4
+   norm_index   M3 luck_belief_z:gini_c         0.0036         0.0036         0.6
+just_benefits   M2        luck_belief_z         0.1847         0.1827         1.1
+just_benefits   M3               gini_c        -0.0241        -0.0091        62.1
+just_benefits   M3 luck_belief_z:gini_c         0.0075         0.0076         1.4
+   just_taxes   M2        luck_belief_z         0.1924         0.1932         0.4
+   just_taxes   M3               gini_c         0.0221         0.0339        53.7
+   just_taxes   M3 luck_belief_z:gini_c         0.0061         0.0061         0.3
+   just_bribe   M2        luck_belief_z         0.1585         0.1598         0.8
+   just_bribe   M3               gini_c         0.0534         0.0514         3.8
+   just_bribe   M3 luck_belief_z:gini_c         0.0094         0.0096         1.6
+   just_steal   M2        luck_belief_z         0.1656         0.1657         0.1
+   just_steal   M3               gini_c        -0.0088         0.0008       108.9
+   just_steal   M3 luck_belief_z:gini_c         0.0064         0.0063         2.9
+        trust   M2        luck_belief_z        -0.0073        -0.0079         7.9
+        trust   M3               gini_c         0.0031         0.0013        56.9
+        trust   M3 luck_belief_z:gini_c         0.0008         0.0008         1.7
+ just_divorce   M2        luck_belief_z         0.1093         0.1094         0.1
+ just_divorce   M3               gini_c        -0.0458        -0.0647        41.3
+ just_divorce   M3 luck_belief_z:gini_c        -0.0023        -0.0020        11.7
 
 wrote /Users/alexdolotov/Library/CloudStorage/OneDrive-Personal/Projects/stats/meritocracy_project/output/tables/gdp_control_check.csv
 
@@ -645,4 +568,3 @@ People who justify cheating may rationalise by deciding the system
 is rigged. Stage 2 (identification) and Stage 3 (experiment) exist
 precisely because this stage cannot settle direction.
 ======================================================================
-PIPELINE_EXIT: 0
